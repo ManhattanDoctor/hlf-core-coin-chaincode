@@ -1,10 +1,10 @@
 import { ILogger, LoggerWrapper, ObjectUtil } from '@ts-core/common';
-import { CoinBalance, ICoinEmitDto, CoinTransferredEvent, CoinEmittedEvent, CoinBurnedEvent, ICoinHoldDto, CoinHoldedEvent, CoinUnholdedEvent, ICoinTransferDto, ICoinBalanceGetDto, ICoinBalance, ICoin } from '@hlf-core/coin';
+import { CoinBalance, ICoinEmitDto, CoinTransferredEvent, CoinEmittedEvent, CoinBurnedEvent, ICoinHoldDto, CoinHoldedEvent, CoinUnholdedEvent, ICoinTransferDto, ICoinBalanceGetDto, ICoinBalance, ICoin, CoinGetCommand, ICoinGetDto } from '@hlf-core/coin';
 import { CoinNotFoundError, CoinObjectNotFoundError } from './Error';
 import { IStub, IStubHolder } from '@hlf-core/chaincode';
-import * as _ from 'lodash';
 import { ICoinManager } from './ICoinManager';
 import { CoinManager } from './CoinManager';
+import * as _ from 'lodash';
 
 export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrapper {
     // --------------------------------------------------------------------------
@@ -120,6 +120,13 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
     //  Other Methods
     //
     // --------------------------------------------------------------------------
+
+    public async get<T extends ICoin>(holder: H, params: ICoinGetDto): Promise<T> {
+        if (await holder.stub.hasNotState(params.uid)) {
+            throw new CoinNotFoundError(params.uid);
+        }
+        return this.getManager<T>(holder.stub, params.uid).get(params.uid, params.details);
+    }
 
     public async balanceGet(holder: H, params: ICoinBalanceGetDto): Promise<ICoinBalance> {
         if (await holder.stub.hasNotState(params.coinUid)) {
