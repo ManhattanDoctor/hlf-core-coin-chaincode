@@ -17,7 +17,7 @@
     "license": "ISC",
     "dependencies": {
         "@hlf-core/chaincode": "~3.6.1",
-        "@hlf-core/coin": "~3.2.14"
+        "@hlf-core/coin": "~3.2.15"
     },
     "devDependencies": {
         "gulp-npm-module-publisher": "~3.0.5"
