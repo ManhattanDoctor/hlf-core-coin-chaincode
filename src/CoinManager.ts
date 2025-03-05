@@ -81,6 +81,42 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
         return { from: fromAccount, to: toAccount };
     }
 
+    public async transferFromHeld(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer> {
+        coin = await this.coinGet(coin);
+        let toAccount = await this.accountGet(coin, to);
+        let fromAccount = await this.accountGet(coin, from);
+
+        await this._transferFromHeld(coin, fromAccount, toAccount, amount);
+
+        await this.accountSave(toAccount);
+        await this.accountSave(fromAccount);
+        return { from: fromAccount, to: toAccount };
+    }
+
+    public async transferToHeld(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer> {
+        coin = await this.coinGet(coin);
+        let toAccount = await this.accountGet(coin, to);
+        let fromAccount = await this.accountGet(coin, from);
+
+        await this._transferToHeld(coin, fromAccount, toAccount, amount);
+
+        await this.accountSave(toAccount);
+        await this.accountSave(fromAccount);
+        return { from: fromAccount, to: toAccount };
+    }
+
+    public async transferFromToHeld(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer> {
+        coin = await this.coinGet(coin);
+        let toAccount = await this.accountGet(coin, to);
+        let fromAccount = await this.accountGet(coin, from);
+
+        await this._transferFromToHeld(coin, fromAccount, toAccount, amount);
+
+        await this.accountSave(toAccount);
+        await this.accountSave(fromAccount);
+        return { from: fromAccount, to: toAccount };
+    }
+
     // --------------------------------------------------------------------------
     //
     //  Common Methods
@@ -119,7 +155,7 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
     protected async accountSave(item: ICoinAccount): Promise<void> {
         await this.account.save(item);
     }
-    
+
     protected async accountsRemove(coin: UID): Promise<void> {
         let kv = await this.getKV(CoinAccount.createUid(coin));
         await Promise.all(kv.map(item => this.account.remove(item.key)));
@@ -170,6 +206,21 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
     protected async _transfer(coin: T, from: ICoinAccount, to: ICoinAccount, amount: string): Promise<void> {
         to.emit(amount);
         from.burn(amount);
+    }
+
+    protected async _transferFromHeld(coin: T, from: ICoinAccount, to: ICoinAccount, amount: string): Promise<void> {
+        to.emit(amount);
+        from.burnHeld(amount);
+    }
+
+    protected async _transferToHeld(coin: T, from: ICoinAccount, to: ICoinAccount, amount: string): Promise<void> {
+        to.emitHeld(amount);
+        from.burn(amount);
+    }
+
+    protected async _transferFromToHeld(coin: T, from: ICoinAccount, to: ICoinAccount, amount: string): Promise<void> {
+        to.emitHeld(amount);
+        from.burnHeld(amount);
     }
 
     // --------------------------------------------------------------------------

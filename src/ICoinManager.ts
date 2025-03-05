@@ -20,6 +20,9 @@ export interface ICoinManager<T extends ICoin = ICoin> {
     unhold(coin: T | string, from: string, amount: string): Promise<ICoinMovement>
 
     transfer(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>;
+    transferToHeld(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>;
+    transferFromHeld(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>;
+    transferFromToHeld(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>;
 }
 
 export interface ICoinMovement {
