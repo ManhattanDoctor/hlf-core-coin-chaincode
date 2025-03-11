@@ -1,6 +1,6 @@
 import { UID, TransformUtil, ILogger } from '@ts-core/common';
 import { CoinAccountManager } from './CoinAccountManager';
-import { Coin, CoinBalance, CoinAccount, ICoin, ICoinAccount, CoinUtil } from '@hlf-core/coin';
+import { Coin, CoinBalance, CoinAccount, ICoin, ICoinAccount, CoinUtil, CoinAccountUtil } from '@hlf-core/coin';
 import { ICoinManager, ICoinMovement, ICoinTransfer } from './ICoinManager';
 import { EntityManagerImpl, IStub } from '@hlf-core/chaincode';
 import * as _ from 'lodash';
@@ -157,7 +157,7 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
     }
 
     protected async accountsRemove(coin: UID): Promise<void> {
-        let kv = await this.getKV(CoinAccount.createUid(coin));
+        let kv = await this.getKV(CoinAccountUtil.createUid(coin));
         await Promise.all(kv.map(item => this.account.remove(item.key)));
     }
 
@@ -231,7 +231,7 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
 
     public async remove(item: UID): Promise<void> {
         await this.accountsRemove(item);
-        await this.stub.removeState(CoinBalance.createUid(item));
+        await this.stub.removeState(CoinAccountUtil.createUid(item));
         await super.remove(item);
     }
 
@@ -252,9 +252,9 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
     // --------------------------------------------------------------------------
 
     public async accountGet(coin: T, object: UID): Promise<ICoinAccount> {
-        let item = await this.account.get(CoinAccount.createUid(coin, object));
+        let item = await this.account.get(CoinAccountUtil.createUid(coin, object));
         if (_.isNil(item)) {
-            item = CoinAccount.create(coin, object);
+            item = CoinAccountUtil.create(coin, object);
         }
         return item;
     }
@@ -266,7 +266,7 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
     // --------------------------------------------------------------------------
 
     public get prefix(): string {
-        return Coin.PREFIX;
+        return CoinUtil.PREFIX;
     }
 }
 

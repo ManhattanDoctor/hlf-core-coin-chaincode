@@ -1,6 +1,6 @@
 import { ILogger, TransformUtil } from '@ts-core/common';
 import { EntityManagerImpl, IStub } from '@hlf-core/chaincode';
-import { CoinAccount } from '@hlf-core/coin';
+import { CoinAccount, CoinAccountUtil } from '@hlf-core/coin';
 
 export class CoinAccountManager extends EntityManagerImpl<CoinAccount> {
     // --------------------------------------------------------------------------
@@ -38,6 +38,6 @@ export class CoinAccountManager extends EntityManagerImpl<CoinAccount> {
     // --------------------------------------------------------------------------
 
     public get prefix(): string {
-        return CoinAccount.PREFIX;
+        return CoinAccountUtil.PREFIX;
     }
 }
