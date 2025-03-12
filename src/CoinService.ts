@@ -24,52 +24,56 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
     // --------------------------------------------------------------------------
 
     public async emit(holder: H, params: ICoinEmitDto, isDispatchEvent: boolean): Promise<void> {
-        if (await holder.stub.hasNotState(params.coinUid)) {
-            throw new CoinNotFoundError(params.coinUid);
+        let { coinUid, amount, objectUid } = params;
+        if (await holder.stub.hasNotState(coinUid)) {
+            throw new CoinNotFoundError(coinUid);
         }
-        if (await holder.stub.hasNotState(params.objectUid)) {
-            throw new CoinObjectNotFoundError(params.objectUid);
+        if (await holder.stub.hasNotState(objectUid)) {
+            throw new CoinObjectNotFoundError(objectUid);
         }
-        await this.getManager(holder.stub, params.coinUid).emit(params.coinUid, params.objectUid, params.amount);
+        await this.getManager(holder.stub, coinUid).emit(coinUid, objectUid, amount);
         if (isDispatchEvent) {
             await holder.stub.dispatch(new CoinEmittedEvent(params));
         }
     }
 
     public async emitHeld(holder: H, params: ICoinEmitDto, isDispatchEvent: boolean): Promise<void> {
-        if (await holder.stub.hasNotState(params.coinUid)) {
-            throw new CoinNotFoundError(params.coinUid);
+        let { coinUid, amount, objectUid } = params;
+        if (await holder.stub.hasNotState(coinUid)) {
+            throw new CoinNotFoundError(coinUid);
         }
-        if (await holder.stub.hasNotState(params.objectUid)) {
-            throw new CoinObjectNotFoundError(params.objectUid);
+        if (await holder.stub.hasNotState(objectUid)) {
+            throw new CoinObjectNotFoundError(objectUid);
         }
-        await this.getManager(holder.stub, params.coinUid).emitHeld(params.coinUid, params.objectUid, params.amount);
+        await this.getManager(holder.stub, coinUid).emitHeld(coinUid, objectUid, amount);
         if (isDispatchEvent) {
             await holder.stub.dispatch(new CoinEmittedEvent(params));
         }
     }
 
     public async burn(holder: H, params: ICoinBurnDto, isDispatchEvent: boolean): Promise<void> {
-        if (await holder.stub.hasNotState(params.coinUid)) {
-            throw new CoinNotFoundError(params.coinUid);
+        let { coinUid, amount, objectUid } = params;
+        if (await holder.stub.hasNotState(coinUid)) {
+            throw new CoinNotFoundError(coinUid);
         }
-        if (await holder.stub.hasNotState(params.objectUid)) {
-            throw new CoinObjectNotFoundError(params.objectUid);
+        if (await holder.stub.hasNotState(objectUid)) {
+            throw new CoinObjectNotFoundError(objectUid);
         }
-        await this.getManager(holder.stub, params.coinUid).burn(params.coinUid, params.objectUid, params.amount);
+        await this.getManager(holder.stub, coinUid).burn(coinUid, objectUid, amount);
         if (isDispatchEvent) {
             await holder.stub.dispatch(new CoinBurnedEvent(params));
         }
     }
 
     public async burnHeld(holder: H, params: ICoinBurnDto, isDispatchEvent: boolean): Promise<void> {
-        if (await holder.stub.hasNotState(params.coinUid)) {
-            throw new CoinNotFoundError(params.coinUid);
+        let { coinUid, amount, objectUid } = params;
+        if (await holder.stub.hasNotState(coinUid)) {
+            throw new CoinNotFoundError(coinUid);
         }
-        if (await holder.stub.hasNotState(params.objectUid)) {
-            throw new CoinObjectNotFoundError(params.objectUid);
+        if (await holder.stub.hasNotState(objectUid)) {
+            throw new CoinObjectNotFoundError(objectUid);
         }
-        await this.getManager(holder.stub, params.coinUid).burnHeld(params.coinUid, params.objectUid, params.amount);
+        await this.getManager(holder.stub, coinUid).burnHeld(coinUid, objectUid, amount);
         if (isDispatchEvent) {
             await holder.stub.dispatch(new CoinBurnedEvent(params));
         }
@@ -82,28 +86,30 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
     // --------------------------------------------------------------------------
 
     public async hold(holder: H, params: ICoinHoldDto, isDispatchEvent: boolean): Promise<void> {
-        if (await holder.stub.hasNotState(params.coinUid)) {
-            throw new CoinNotFoundError(params.coinUid);
+        let { coinUid, amount, from, initiatorUid } = params;
+        if (await holder.stub.hasNotState(coinUid)) {
+            throw new CoinNotFoundError(coinUid);
         }
-        if (await holder.stub.hasNotState(params.from)) {
-            throw new CoinObjectNotFoundError(params.from);
+        if (await holder.stub.hasNotState(from)) {
+            throw new CoinObjectNotFoundError(from);
         }
-        await this.getManager(holder.stub, params.coinUid).hold(params.coinUid, params.from, params.amount);
+        await this.getManager(holder.stub, coinUid).hold(coinUid, from, amount);
         if (isDispatchEvent) {
-            await holder.stub.dispatch(new CoinHoldedEvent({ coinUid: params.coinUid, amount: params.amount, objectUid: params.from, initiatorUid: params.initiatorUid }));
+            await holder.stub.dispatch(new CoinHoldedEvent({ objectUid: from, coinUid, amount, initiatorUid }));
         }
     }
 
     public async unhold(holder: H, params: ICoinUnholdDto, isDispatchEvent: boolean): Promise<void> {
-        if (await holder.stub.hasNotState(params.coinUid)) {
-            throw new CoinNotFoundError(params.coinUid);
+        let { coinUid, amount, from, initiatorUid } = params;
+        if (await holder.stub.hasNotState(coinUid)) {
+            throw new CoinNotFoundError(coinUid);
         }
-        if (await holder.stub.hasNotState(params.from)) {
-            throw new CoinObjectNotFoundError(params.from);
+        if (await holder.stub.hasNotState(from)) {
+            throw new CoinObjectNotFoundError(from);
         }
-        await this.getManager(holder.stub, params.coinUid).unhold(params.coinUid, params.from, params.amount);
+        await this.getManager(holder.stub, coinUid).unhold(coinUid, from, amount);
         if (isDispatchEvent) {
-            await holder.stub.dispatch(new CoinUnholdedEvent({ coinUid: params.coinUid, amount: params.amount, objectUid: params.from, initiatorUid: params.initiatorUid }));
+            await holder.stub.dispatch(new CoinUnholdedEvent({ objectUid: from, coinUid, amount, initiatorUid }));
         }
     }
 
@@ -114,66 +120,74 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
     // --------------------------------------------------------------------------
 
     public async transfer(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void> {
-        if (await holder.stub.hasNotState(params.coinUid)) {
-            throw new CoinNotFoundError(params.coinUid);
+        let { coinUid, amount, from, to, initiatorUid } = params;
+        if (await holder.stub.hasNotState(coinUid)) {
+            throw new CoinNotFoundError(coinUid);
         }
-        if (await holder.stub.hasNotState(params.to)) {
-            throw new CoinObjectNotFoundError(params.to);
+        if (await holder.stub.hasNotState(to)) {
+            throw new CoinObjectNotFoundError(to);
         }
-        if (await holder.stub.hasNotState(params.from)) {
-            throw new CoinObjectNotFoundError(params.from);
+        if (await holder.stub.hasNotState(from)) {
+            throw new CoinObjectNotFoundError(from);
         }
-        await this.getManager(holder.stub, params.coinUid).transfer(params.coinUid, params.from, params.to, params.amount);
+        await this.getManager(holder.stub, coinUid).transfer(coinUid, from, to, amount);
         if (isDispatchEvent) {
-            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid: params.coinUid, from: params.from, to: params.to, amount: params.amount, initiatorUid: params.initiatorUid }));
+            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid, from, to, amount, initiatorUid }));
         }
     }
 
     public async transferToHeld(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void> {
-        if (await holder.stub.hasNotState(params.coinUid)) {
-            throw new CoinNotFoundError(params.coinUid);
+        let { coinUid, amount, from, to, initiatorUid } = params;
+        if (await holder.stub.hasNotState(coinUid)) {
+            throw new CoinNotFoundError(coinUid);
         }
-        if (await holder.stub.hasNotState(params.to)) {
-            throw new CoinObjectNotFoundError(params.to);
+        if (await holder.stub.hasNotState(to)) {
+            throw new CoinObjectNotFoundError(to);
         }
-        if (await holder.stub.hasNotState(params.from)) {
-            throw new CoinObjectNotFoundError(params.from);
+        if (await holder.stub.hasNotState(from)) {
+            throw new CoinObjectNotFoundError(from);
         }
-        await this.getManager(holder.stub, params.coinUid).transferToHeld(params.coinUid, params.from, params.to, params.amount);
+        await this.getManager(holder.stub, coinUid).transferToHeld(coinUid, from, to, amount);
         if (isDispatchEvent) {
-            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid: params.coinUid, from: params.from, to: params.to, amount: params.amount, initiatorUid: params.initiatorUid }));
+            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid, from, to, amount, initiatorUid }));
+            await holder.stub.dispatch(new CoinHoldedEvent({ objectUid: params.to, coinUid, amount, initiatorUid }));
         }
     }
 
     public async transferFromHeld(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void> {
-        if (await holder.stub.hasNotState(params.coinUid)) {
-            throw new CoinNotFoundError(params.coinUid);
+        let { coinUid, amount, from, to, initiatorUid } = params;
+        if (await holder.stub.hasNotState(coinUid)) {
+            throw new CoinNotFoundError(coinUid);
         }
-        if (await holder.stub.hasNotState(params.to)) {
-            throw new CoinObjectNotFoundError(params.to);
+        if (await holder.stub.hasNotState(to)) {
+            throw new CoinObjectNotFoundError(to);
         }
-        if (await holder.stub.hasNotState(params.from)) {
-            throw new CoinObjectNotFoundError(params.from);
+        if (await holder.stub.hasNotState(from)) {
+            throw new CoinObjectNotFoundError(from);
         }
-        await this.getManager(holder.stub, params.coinUid).transferFromHeld(params.coinUid, params.from, params.to, params.amount);
+        await this.getManager(holder.stub, coinUid).transferFromHeld(coinUid, from, to, amount);
         if (isDispatchEvent) {
-            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid: params.coinUid, from: params.from, to: params.to, amount: params.amount, initiatorUid: params.initiatorUid }));
+            await holder.stub.dispatch(new CoinUnholdedEvent({ objectUid: params.from, coinUid, amount, initiatorUid }));
+            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid, from, to, amount, initiatorUid }));
         }
     }
 
     public async transferFromToHeld(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void> {
-        if (await holder.stub.hasNotState(params.coinUid)) {
-            throw new CoinNotFoundError(params.coinUid);
+        let { coinUid, amount, from, to, initiatorUid } = params;
+        if (await holder.stub.hasNotState(coinUid)) {
+            throw new CoinNotFoundError(coinUid);
         }
-        if (await holder.stub.hasNotState(params.to)) {
-            throw new CoinObjectNotFoundError(params.to);
+        if (await holder.stub.hasNotState(to)) {
+            throw new CoinObjectNotFoundError(to);
         }
-        if (await holder.stub.hasNotState(params.from)) {
-            throw new CoinObjectNotFoundError(params.from);
+        if (await holder.stub.hasNotState(from)) {
+            throw new CoinObjectNotFoundError(from);
         }
-        await this.getManager(holder.stub, params.coinUid).transferFromToHeld(params.coinUid, params.from, params.to, params.amount);
+        await this.getManager(holder.stub, coinUid).transferFromToHeld(coinUid, from, to, amount);
         if (isDispatchEvent) {
-            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid: params.coinUid, from: params.from, to: params.to, amount: params.amount, initiatorUid: params.initiatorUid }));
+            await holder.stub.dispatch(new CoinUnholdedEvent({ objectUid: params.from, coinUid, amount, initiatorUid }));
+            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid, from, to, amount, initiatorUid }));
+            await holder.stub.dispatch(new CoinHoldedEvent({ objectUid: params.to, coinUid, amount, initiatorUid }));
         }
     }
 
@@ -184,20 +198,22 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
     // --------------------------------------------------------------------------
 
     public async get<T extends ICoin>(holder: H, params: ICoinGetDto): Promise<T> {
-        if (await holder.stub.hasNotState(params.uid)) {
-            throw new CoinNotFoundError(params.uid);
+        let { uid, details } = params;
+        if (await holder.stub.hasNotState(uid)) {
+            throw new CoinNotFoundError(uid);
         }
-        return this.getManager<T>(holder.stub, params.uid).get(params.uid, params.details);
+        return this.getManager<T>(holder.stub, uid).get(uid, details);
     }
 
     public async balanceGet(holder: H, params: ICoinBalanceGetDto): Promise<ICoinBalanceGetDtoResponse> {
-        if (await holder.stub.hasNotState(params.coinUid)) {
-            throw new CoinNotFoundError(params.coinUid);
+        let { coinUid, objectUid } = params;
+        if (await holder.stub.hasNotState(coinUid)) {
+            throw new CoinNotFoundError(coinUid);
         }
-        if (await holder.stub.hasNotState(params.objectUid)) {
-            throw new CoinObjectNotFoundError(params.objectUid);
+        if (await holder.stub.hasNotState(objectUid)) {
+            throw new CoinObjectNotFoundError(objectUid);
         }
-        let account = await this.getManager(holder.stub, params.coinUid).accountGet(params.coinUid, params.objectUid);
+        let account = await this.getManager(holder.stub, coinUid).accountGet(coinUid, objectUid);
         return { held: account.held, inUse: account.inUse, total: account.getTotal() }
     }
 
