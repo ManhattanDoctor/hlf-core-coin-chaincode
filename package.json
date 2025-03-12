@@ -1,6 +1,6 @@
 {
     "name": "@hlf-core/coin-chaincode",
-    "version": "3.6.6",
+    "version": "3.6.7",
     "description": "Hyperledger Fabric coin chaincode classes",
     "main": "./cjs/public-api.js",
     "module": "./esm/public-api.js",
