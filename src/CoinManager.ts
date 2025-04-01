@@ -90,6 +90,7 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
 
         await this.accountSave(toAccount);
         await this.accountSave(fromAccount);
+        await this.save(coin);
         return { from: fromAccount, to: toAccount };
     }
 
@@ -102,6 +103,7 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
 
         await this.accountSave(toAccount);
         await this.accountSave(fromAccount);
+        await this.save(coin);
         return { from: fromAccount, to: toAccount };
     }
 
@@ -114,6 +116,7 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
 
         await this.accountSave(toAccount);
         await this.accountSave(fromAccount);
+        await this.save(coin);
         return { from: fromAccount, to: toAccount };
     }
 
