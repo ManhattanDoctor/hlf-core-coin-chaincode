@@ -78,6 +78,7 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
 
         await this.accountSave(toAccount);
         await this.accountSave(fromAccount);
+        await this.save(coin);
         return { from: fromAccount, to: toAccount };
     }
 
@@ -172,58 +173,62 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
 
     protected async _emit(item: ICoinAccountDetails<T>, amount: string): Promise<void> {
         let { coin, account } = item;
-        coin.balance.emit(amount);
-        account.emit(amount);
+        coin.balance.add(amount);
+        account.add(amount);
     }
 
     protected async _emitHeld(item: ICoinAccountDetails<T>, amount: string): Promise<void> {
         let { coin, account } = item;
-        coin.balance.emitHeld(amount);
-        account.emitHeld(amount);
+        account.addHeld(amount);
+        coin.balance.addHeld(amount);
     }
 
     protected async _burn(item: ICoinAccountDetails<T>, amount: string): Promise<void> {
         let { coin, account } = item;
-        coin.balance.burn(amount);
-        account.burn(amount);
+        account.remove(amount);
+        coin.balance.remove(amount);
     }
 
     protected async _burnHeld(item: ICoinAccountDetails<T>, amount: string): Promise<void> {
         let { coin, account } = item;
-        coin.balance.burnHeld(amount);
-        account.burnHeld(amount);
+        coin.balance.removeHeld(amount);
+        account.removeHeld(amount);
     }
 
     protected async _hold(item: ICoinAccountDetails<T>, amount: string): Promise<void> {
         let { coin, account } = item;
-        coin.balance.hold(amount);
         account.hold(amount);
+        coin.balance.hold(amount);
     }
 
     protected async _unhold(item: ICoinAccountDetails<T>, amount: string): Promise<void> {
         let { coin, account } = item;
-        coin.balance.unhold(amount);
         account.unhold(amount);
+        coin.balance.unhold(amount);
     }
 
     protected async _transfer(coin: T, from: ICoinAccount, to: ICoinAccount, amount: string): Promise<void> {
-        to.emit(amount);
-        from.burn(amount);
+        to.add(amount);
+        from.remove(amount);
+        coin.balance.transfer(amount);
     }
 
     protected async _transferFromHeld(coin: T, from: ICoinAccount, to: ICoinAccount, amount: string): Promise<void> {
-        to.emit(amount);
-        from.burnHeld(amount);
+        to.add(amount);
+        from.removeHeld(amount);
+        coin.balance.transferFromHeld(amount);
     }
 
     protected async _transferToHeld(coin: T, from: ICoinAccount, to: ICoinAccount, amount: string): Promise<void> {
-        to.emitHeld(amount);
-        from.burn(amount);
+        to.addHeld(amount);
+        from.remove(amount);
+        coin.balance.transferToHeld(amount);
     }
 
     protected async _transferFromToHeld(coin: T, from: ICoinAccount, to: ICoinAccount, amount: string): Promise<void> {
-        to.emitHeld(amount);
-        from.burnHeld(amount);
+        to.addHeld(amount);
+        from.removeHeld(amount);
+        coin.balance.transferFromToHeld(amount);
     }
 
     // --------------------------------------------------------------------------
