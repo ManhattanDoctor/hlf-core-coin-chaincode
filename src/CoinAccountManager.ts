@@ -19,16 +19,16 @@ export class CoinAccountManager extends EntityManagerImpl<CoinAccount> {
     //
     // --------------------------------------------------------------------------
 
+    public toEntity(item: any): CoinAccount {
+        return TransformUtil.toClass(CoinAccount, item);
+    }
+    
     public async save(item: CoinAccount): Promise<CoinAccount> {
         if (item.isEmpty()) {
             await this.remove(item);
             return item;
         }
         return super.save(item);
-    }
-
-    public toEntity(item: any): CoinAccount {
-        return TransformUtil.toClass(CoinAccount, item);
     }
 
     // --------------------------------------------------------------------------

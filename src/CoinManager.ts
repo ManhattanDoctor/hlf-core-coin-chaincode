@@ -1,6 +1,6 @@
 import { UID, TransformUtil, ILogger } from '@ts-core/common';
 import { CoinAccountManager } from './CoinAccountManager';
-import { Coin, CoinBalance, CoinAccount, ICoin, ICoinAccount, CoinUtil, CoinAccountUtil } from '@hlf-core/coin';
+import { Coin, ICoin, ICoinAccount, CoinUtil, CoinAccountUtil } from '@hlf-core/coin';
 import { ICoinManager, ICoinMovement, ICoinTransfer } from './ICoinManager';
 import { EntityManagerImpl, IStub } from '@hlf-core/chaincode';
 import * as _ from 'lodash';
@@ -123,20 +123,6 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
 
     // --------------------------------------------------------------------------
     //
-    //  Common Methods
-    //
-    // --------------------------------------------------------------------------
-
-    public create(coinId: string, decimals: number, owner: UID): T {
-        return CoinUtil.create(Coin, coinId, decimals, owner) as T;
-    }
-
-    public toEntity(item: any): T {
-        return TransformUtil.toClass(Coin, item) as T;
-    }
-
-    // --------------------------------------------------------------------------
-    //
     //  Protected Methods
     //
     // --------------------------------------------------------------------------
@@ -156,9 +142,7 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
         return item;
     }
 
-    protected async accountSave(item: ICoinAccount): Promise<void> {
-        await this.account.save(item);
-    }
+
 
     protected async accountsRemove(coin: UID): Promise<void> {
         let kv = await this.getKV(CoinAccountUtil.createUid(coin));
@@ -237,6 +221,14 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
     //
     // --------------------------------------------------------------------------
 
+    public create(coinId: string, decimals: number, owner: UID): T {
+        return CoinUtil.create(Coin, coinId, decimals, owner) as T;
+    }
+
+    public toEntity(item: any): T {
+        return TransformUtil.toClass(Coin, item) as T;
+    }
+
     public async remove(item: UID): Promise<void> {
         await this.accountsRemove(item);
         await this.stub.removeState(CoinAccountUtil.createUid(item));
@@ -265,6 +257,10 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
             item = CoinAccountUtil.create(coin, object);
         }
         return item;
+    }
+
+    public async accountSave(item: ICoinAccount): Promise<void> {
+        await this.account.save(item);
     }
 
     // --------------------------------------------------------------------------
