@@ -76,8 +76,8 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
 
         await this._transfer(coin, fromAccount, toAccount, amount);
 
-        await this.accountSave(toAccount);
-        await this.accountSave(fromAccount);
+        await this.accountSet(toAccount);
+        await this.accountSet(fromAccount);
         await this.save(coin);
         return { from: fromAccount, to: toAccount };
     }
@@ -89,8 +89,8 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
 
         await this._transferFromHeld(coin, fromAccount, toAccount, amount);
 
-        await this.accountSave(toAccount);
-        await this.accountSave(fromAccount);
+        await this.accountSet(toAccount);
+        await this.accountSet(fromAccount);
         await this.save(coin);
         return { from: fromAccount, to: toAccount };
     }
@@ -102,8 +102,8 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
 
         await this._transferToHeld(coin, fromAccount, toAccount, amount);
 
-        await this.accountSave(toAccount);
-        await this.accountSave(fromAccount);
+        await this.accountSet(toAccount);
+        await this.accountSet(fromAccount);
         await this.save(coin);
         return { from: fromAccount, to: toAccount };
     }
@@ -115,8 +115,8 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
 
         await this._transferFromToHeld(coin, fromAccount, toAccount, amount);
 
-        await this.accountSave(toAccount);
-        await this.accountSave(fromAccount);
+        await this.accountSet(toAccount);
+        await this.accountSet(fromAccount);
         await this.save(coin);
         return { from: fromAccount, to: toAccount };
     }
@@ -138,7 +138,7 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
 
     protected async saveAccountDetails(item: ICoinAccountDetails<T>): Promise<ICoinAccountDetails<T>> {
         await this.save(item.coin);
-        await this.accountSave(item.account);
+        await this.accountSet(item.account);
         return item;
     }
 
@@ -259,8 +259,8 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
         return item;
     }
 
-    public async accountSave(item: ICoinAccount): Promise<void> {
-        await this.account.save(item);
+    public async accountSet(item: ICoinAccount): Promise<ICoinAccount> {
+        return this.account.save(item);
     }
 
     // --------------------------------------------------------------------------
