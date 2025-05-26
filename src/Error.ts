@@ -34,8 +34,14 @@ export class CoinObjectNotFoundError extends Error<string> {
         super(ErrorCode.COIN_OBJECT_NOT_FOUND, getUid(item));
     }
 }
+export class CoinFromToEqualsError extends Error<string> {
+    constructor(item: UID) {
+        super(ErrorCode.COIN_FROM_TO_EQUALS, getUid(item));
+    }
+}
 
 export enum ErrorCode {
     COIN_NOT_FOUND = 'HLF_COIN_NOT_FOUND',
+    COIN_FROM_TO_EQUALS = 'HLF_COIN_FROM_TO_EQUALS',
     COIN_OBJECT_NOT_FOUND = 'HLF_COIN_OBJECT_NOT_FOUND'
 }

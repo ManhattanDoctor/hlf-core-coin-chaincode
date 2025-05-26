@@ -1,6 +1,6 @@
 import { ILogger, LoggerWrapper } from '@ts-core/common';
 import { ICoinEmitDto, CoinTransferredEvent, CoinEmittedEvent, CoinBurnedEvent, ICoinHoldDto, CoinHoldedEvent, CoinUnholdedEvent, ICoinTransferDto, ICoinBalanceGetDto, ICoin, ICoinGetDto, ICoinBurnDto, ICoinUnholdDto, ICoinBalanceGetDtoResponse } from '@hlf-core/coin';
-import { CoinNotFoundError, CoinObjectNotFoundError } from './Error';
+import { CoinFromToEqualsError, CoinNotFoundError, CoinObjectNotFoundError } from './Error';
 import { IStub, IStubHolder } from '@hlf-core/chaincode';
 import { ICoinManager } from './ICoinManager';
 import { CoinManager } from './CoinManager';
@@ -15,6 +15,28 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
 
     constructor(logger: ILogger) {
         super(logger);
+    }
+
+    // --------------------------------------------------------------------------
+    //
+    //  Protected Methods
+    //
+    // --------------------------------------------------------------------------
+
+    protected async validateTransfer(holder: H, params: ICoinTransferDto): Promise<void> {
+        let { from, to, coinUid } = params;
+        if (from === to) {
+            throw new CoinFromToEqualsError(from);
+        }
+        if (await holder.stub.hasNotState(coinUid)) {
+            throw new CoinNotFoundError(coinUid);
+        }
+        if (await holder.stub.hasNotState(to)) {
+            throw new CoinObjectNotFoundError(to);
+        }
+        if (await holder.stub.hasNotState(from)) {
+            throw new CoinObjectNotFoundError(from);
+        }
     }
 
     // --------------------------------------------------------------------------
@@ -121,15 +143,7 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
 
     public async transfer(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void> {
         let { coinUid, amount, from, to, initiatorUid } = params;
-        if (await holder.stub.hasNotState(coinUid)) {
-            throw new CoinNotFoundError(coinUid);
-        }
-        if (await holder.stub.hasNotState(to)) {
-            throw new CoinObjectNotFoundError(to);
-        }
-        if (await holder.stub.hasNotState(from)) {
-            throw new CoinObjectNotFoundError(from);
-        }
+        await this.validateTransfer(holder, params);
         await this.getManager(holder.stub, coinUid).transfer(coinUid, from, to, amount);
         if (isDispatchEvent) {
             await holder.stub.dispatch(new CoinTransferredEvent({ coinUid, from, to, amount, initiatorUid }));
@@ -138,15 +152,7 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
 
     public async transferToHeld(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void> {
         let { coinUid, amount, from, to, initiatorUid } = params;
-        if (await holder.stub.hasNotState(coinUid)) {
-            throw new CoinNotFoundError(coinUid);
-        }
-        if (await holder.stub.hasNotState(to)) {
-            throw new CoinObjectNotFoundError(to);
-        }
-        if (await holder.stub.hasNotState(from)) {
-            throw new CoinObjectNotFoundError(from);
-        }
+        await this.validateTransfer(holder, params);
         await this.getManager(holder.stub, coinUid).transferToHeld(coinUid, from, to, amount);
         if (isDispatchEvent) {
             await holder.stub.dispatch(new CoinTransferredEvent({ coinUid, from, to, amount, initiatorUid }));
@@ -156,15 +162,7 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
 
     public async transferFromHeld(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void> {
         let { coinUid, amount, from, to, initiatorUid } = params;
-        if (await holder.stub.hasNotState(coinUid)) {
-            throw new CoinNotFoundError(coinUid);
-        }
-        if (await holder.stub.hasNotState(to)) {
-            throw new CoinObjectNotFoundError(to);
-        }
-        if (await holder.stub.hasNotState(from)) {
-            throw new CoinObjectNotFoundError(from);
-        }
+        await this.validateTransfer(holder, params);
         await this.getManager(holder.stub, coinUid).transferFromHeld(coinUid, from, to, amount);
         if (isDispatchEvent) {
             await holder.stub.dispatch(new CoinUnholdedEvent({ objectUid: params.from, coinUid, amount, initiatorUid }));
@@ -174,15 +172,7 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
 
     public async transferFromToHeld(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void> {
         let { coinUid, amount, from, to, initiatorUid } = params;
-        if (await holder.stub.hasNotState(coinUid)) {
-            throw new CoinNotFoundError(coinUid);
-        }
-        if (await holder.stub.hasNotState(to)) {
-            throw new CoinObjectNotFoundError(to);
-        }
-        if (await holder.stub.hasNotState(from)) {
-            throw new CoinObjectNotFoundError(from);
-        }
+        await this.validateTransfer(holder, params);
         await this.getManager(holder.stub, coinUid).transferFromToHeld(coinUid, from, to, amount);
         if (isDispatchEvent) {
             await holder.stub.dispatch(new CoinUnholdedEvent({ objectUid: params.from, coinUid, amount, initiatorUid }));
