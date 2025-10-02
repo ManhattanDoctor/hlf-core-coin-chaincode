@@ -142,8 +142,6 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
         return item;
     }
 
-
-
     protected async accountsRemove(coin: UID): Promise<void> {
         let kv = await this.getKV(CoinAccountUtil.createUid(coin));
         await Promise.all(kv.map(item => this.account.remove(item.key)));
@@ -261,6 +259,10 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
 
     public async accountSet(item: ICoinAccount): Promise<ICoinAccount> {
         return this.account.save(item);
+    }
+
+    public async accountList(coin: T): Promise<Array<ICoinAccount>> {
+        return this.account.list(coin);
     }
 
     // --------------------------------------------------------------------------

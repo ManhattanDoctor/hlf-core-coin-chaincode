@@ -10,6 +10,7 @@ export interface ICoinManager<T extends ICoin = ICoin> {
 
     accountGet(coin: UID, object: UID): Promise<ICoinAccount>;
     accountSet(item: ICoinAccount): Promise<ICoinAccount>;
+    accountList(coin: UID): Promise<Array<ICoinAccount>>;
 
     emit(coin: T | string, to: string, amount: string): Promise<ICoinMovement>;
     emitHeld(coin: T | string, to: string, amount: string): Promise<ICoinMovement>;
