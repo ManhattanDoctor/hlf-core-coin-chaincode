@@ -1,5 +1,5 @@
-import { ILogger, LoggerWrapper } from '@ts-core/common';
-import { ICoinEmitDto, CoinTransferredEvent, CoinEmittedEvent, CoinBurnedEvent, ICoinHoldDto, CoinHoldedEvent, CoinUnholdedEvent, ICoinTransferDto, ICoinBalanceGetDto, ICoin, ICoinGetDto, ICoinBurnDto, ICoinUnholdDto, ICoinBalanceGetDtoResponse } from '@hlf-core/coin';
+import { ILogger, LoggerWrapper, MathUtil } from '@ts-core/common';
+import { ICoinEmitDto, CoinTransferredEvent, CoinEmittedEvent, CoinBurnedEvent, ICoinHoldDto, CoinHoldedEvent, CoinUnholdedEvent, ICoinTransferDto, ICoinBalanceGetDto, ICoin, ICoinGetDto, ICoinBurnDto, ICoinUnholdDto, ICoinBalanceGetDtoResponse, ICoinNullifyDto, CoinNullifiedEvent } from '@hlf-core/coin';
 import { CoinFromToEqualsError, CoinNotFoundError, CoinObjectNotFoundError } from './Error';
 import { IStub, IStubHolder } from '@hlf-core/chaincode';
 import { ICoinManager } from './ICoinManager';
@@ -98,6 +98,34 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
         await this.getManager(holder.stub, coinUid).burnHeld(coinUid, objectUid, amount);
         if (isDispatchEvent) {
             await holder.stub.dispatch(new CoinBurnedEvent(params));
+        }
+    }
+
+    public async nullify(holder: H, params: ICoinNullifyDto, isDispatchEvent: boolean): Promise<void> {
+        let { coinUid, objectUid } = params;
+        if (await holder.stub.hasNotState(coinUid)) {
+            throw new CoinNotFoundError(coinUid);
+        }
+        if (await holder.stub.hasNotState(objectUid)) {
+            throw new CoinObjectNotFoundError(objectUid);
+        }
+        let { amount } = await this.getManager(holder.stub, coinUid).nullify(coinUid, objectUid);
+        if (isDispatchEvent && !MathUtil.equals(amount, '0')) {
+            await holder.stub.dispatch(new CoinNullifiedEvent(params));
+        }
+    }
+
+    public async nullifyHeld(holder: H, params: ICoinNullifyDto, isDispatchEvent: boolean): Promise<void> {
+        let { coinUid, objectUid } = params;
+        if (await holder.stub.hasNotState(coinUid)) {
+            throw new CoinNotFoundError(coinUid);
+        }
+        if (await holder.stub.hasNotState(objectUid)) {
+            throw new CoinObjectNotFoundError(objectUid);
+        }
+        let { amount } = await this.getManager(holder.stub, coinUid).nullifyHeld(coinUid, objectUid);
+        if (isDispatchEvent && !MathUtil.equals(amount, '0')) {
+            await holder.stub.dispatch(new CoinNullifiedEvent(params));
         }
     }
 

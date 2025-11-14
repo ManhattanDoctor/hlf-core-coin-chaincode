@@ -1,7 +1,7 @@
 import { UID, TransformUtil, ILogger } from '@ts-core/common';
 import { CoinAccountManager } from './CoinAccountManager';
 import { Coin, ICoin, ICoinAccount, CoinUtil, CoinAccountUtil } from '@hlf-core/coin';
-import { ICoinManager, ICoinMovement, ICoinTransfer } from './ICoinManager';
+import { ICoinManager, ICoinMovement, ICoinNullify, ICoinTransfer } from './ICoinManager';
 import { EntityManagerImpl, IStub } from '@hlf-core/chaincode';
 import * as _ from 'lodash';
 
@@ -67,6 +67,20 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
         await this._unhold(item, amount);
         await this.saveAccountDetails(item);
         return item;
+    }
+
+    public async nullify(coinUid: T | string, account: string): Promise<ICoinNullify> {
+        let item = await this.loadAccountDetails(coinUid, account);
+        let amount = await this._nullify(item);
+        let { coin } = await this.saveAccountDetails(item);
+        return { coin, amount };
+    }
+
+    public async nullifyHeld(coinUid: T | string, account: string): Promise<ICoinNullify> {
+        let item = await this.loadAccountDetails(coinUid, account);
+        let amount = await this._nullifyHeld(item);
+        let { coin } = await this.saveAccountDetails(item);
+        return { coin, amount };
     }
 
     public async transfer(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer> {
@@ -175,6 +189,20 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
         let { coin, account } = item;
         coin.balance.removeHeld(amount);
         account.removeHeld(amount);
+    }
+
+    protected async _nullify(item: ICoinAccountDetails<T>): Promise<string> {
+        let { coin, account } = item;
+        let amount = account.nullify();
+        coin.balance.nullify();
+        return amount;
+    }
+
+    protected async _nullifyHeld(item: ICoinAccountDetails<T>): Promise<string> {
+        let { coin, account } = item;
+        let amount = coin.balance.nullifyHeld();
+        account.nullifyHeld();
+        return amount;
     }
 
     protected async _hold(item: ICoinAccountDetails<T>, amount: string): Promise<void> {

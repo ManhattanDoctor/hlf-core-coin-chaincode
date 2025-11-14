@@ -18,6 +18,9 @@ export interface ICoinManager<T extends ICoin = ICoin> {
     burn(coin: T | string, from: string, amount: string): Promise<ICoinMovement>;
     burnHeld(coin: T | string, from: string, amount: string): Promise<ICoinMovement>;
 
+    nullify(coin: T | string, from: string): Promise<ICoinNullify>;
+    nullifyHeld(coin: T | string, from: string): Promise<ICoinNullify>;
+
     hold(coin: T | string, from: string, amount: string): Promise<ICoinMovement>;
     unhold(coin: T | string, from: string, amount: string): Promise<ICoinMovement>
 
@@ -27,6 +30,10 @@ export interface ICoinManager<T extends ICoin = ICoin> {
     transferFromToHeld(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>;
 }
 
+export interface ICoinNullify {
+    coin: Coin;
+    amount: string;
+}
 export interface ICoinMovement {
     coin: Coin;
     account: CoinAccount;
