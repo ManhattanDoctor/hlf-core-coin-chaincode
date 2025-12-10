@@ -147,16 +147,16 @@ remove(item: UID): Promise<void>
 
 ```typescript
 // Эмиссия токенов
-emit(coin: T | string, to: string, amount: string): Promise<ICoinMovement>
-emitHeld(coin: T | string, to: string, amount: string): Promise<ICoinMovement>
+emit(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>
+emitHeld(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>
 
 // Сжигание токенов
-burn(coin: T | string, from: string, amount: string): Promise<ICoinMovement>
-burnHeld(coin: T | string, from: string, amount: string): Promise<ICoinMovement>
+burn(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>
+burnHeld(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>
 
 // Удержание токенов
-hold(coin: T | string, from: string, amount: string): Promise<ICoinMovement>
-unhold(coin: T | string, from: string, amount: string): Promise<ICoinMovement>
+hold(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>
+unhold(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>
 
 // Переводы
 transfer(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>
@@ -252,7 +252,7 @@ for (const user of users) {
 // Удержание 100 токенов на счете пользователя
 await service.hold(holder, {
     coinUid: token.uid,
-    from: 'user1',
+    objectUid: 'user1',
     amount: '100',
     initiatorUid: 'escrow-service'
 }, true);
@@ -268,7 +268,7 @@ console.log(`Доступно: ${balance.inUse}, удержано: ${balance.hel
 // Разблокировка удержанных средств
 await service.unhold(holder, {
     coinUid: token.uid,
-    from: 'user1',
+    objectUid: 'user1',
     amount: '100',
     initiatorUid: 'escrow-service'
 }, true);

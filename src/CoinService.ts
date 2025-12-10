@@ -24,9 +24,9 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
     // --------------------------------------------------------------------------
 
     protected async validateTransfer(holder: H, params: ICoinTransferDto): Promise<void> {
-        let { from, to, coinUid } = params;
-        if (from === to) {
-            throw new CoinFromToEqualsError(from);
+        let { objectUid, to, coinUid } = params;
+        if (objectUid === to) {
+            throw new CoinFromToEqualsError(objectUid);
         }
         if (await holder.stub.hasNotState(coinUid)) {
             throw new CoinNotFoundError(coinUid);
@@ -34,8 +34,8 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
         if (await holder.stub.hasNotState(to)) {
             throw new CoinObjectNotFoundError(to);
         }
-        if (await holder.stub.hasNotState(from)) {
-            throw new CoinObjectNotFoundError(from);
+        if (await holder.stub.hasNotState(objectUid)) {
+            throw new CoinObjectNotFoundError(objectUid);
         }
     }
 
@@ -46,56 +46,56 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
     // --------------------------------------------------------------------------
 
     public async emit(holder: H, params: ICoinEmitDto, isDispatchEvent: boolean): Promise<void> {
-        let { coinUid, amount, objectUid } = params;
+        let { coinUid, value, objectUid } = params;
         if (await holder.stub.hasNotState(coinUid)) {
             throw new CoinNotFoundError(coinUid);
         }
         if (await holder.stub.hasNotState(objectUid)) {
             throw new CoinObjectNotFoundError(objectUid);
         }
-        await this.getManager(holder.stub, coinUid).emit(coinUid, objectUid, amount);
+        await this.getManager(holder.stub, coinUid).emit(coinUid, objectUid, value);
         if (isDispatchEvent) {
             await holder.stub.dispatch(new CoinEmittedEvent(params));
         }
     }
 
     public async emitHeld(holder: H, params: ICoinEmitDto, isDispatchEvent: boolean): Promise<void> {
-        let { coinUid, amount, objectUid } = params;
+        let { coinUid, value, objectUid } = params;
         if (await holder.stub.hasNotState(coinUid)) {
             throw new CoinNotFoundError(coinUid);
         }
         if (await holder.stub.hasNotState(objectUid)) {
             throw new CoinObjectNotFoundError(objectUid);
         }
-        await this.getManager(holder.stub, coinUid).emitHeld(coinUid, objectUid, amount);
+        await this.getManager(holder.stub, coinUid).emitHeld(coinUid, objectUid, value);
         if (isDispatchEvent) {
             await holder.stub.dispatch(new CoinEmittedEvent(params));
         }
     }
 
     public async burn(holder: H, params: ICoinBurnDto, isDispatchEvent: boolean): Promise<void> {
-        let { coinUid, amount, objectUid } = params;
+        let { coinUid, value, objectUid } = params;
         if (await holder.stub.hasNotState(coinUid)) {
             throw new CoinNotFoundError(coinUid);
         }
         if (await holder.stub.hasNotState(objectUid)) {
             throw new CoinObjectNotFoundError(objectUid);
         }
-        await this.getManager(holder.stub, coinUid).burn(coinUid, objectUid, amount);
+        await this.getManager(holder.stub, coinUid).burn(coinUid, objectUid, value);
         if (isDispatchEvent) {
             await holder.stub.dispatch(new CoinBurnedEvent(params));
         }
     }
 
     public async burnHeld(holder: H, params: ICoinBurnDto, isDispatchEvent: boolean): Promise<void> {
-        let { coinUid, amount, objectUid } = params;
+        let { coinUid, value, objectUid } = params;
         if (await holder.stub.hasNotState(coinUid)) {
             throw new CoinNotFoundError(coinUid);
         }
         if (await holder.stub.hasNotState(objectUid)) {
             throw new CoinObjectNotFoundError(objectUid);
         }
-        await this.getManager(holder.stub, coinUid).burnHeld(coinUid, objectUid, amount);
+        await this.getManager(holder.stub, coinUid).burnHeld(coinUid, objectUid, value);
         if (isDispatchEvent) {
             await holder.stub.dispatch(new CoinBurnedEvent(params));
         }
@@ -136,30 +136,30 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
     // --------------------------------------------------------------------------
 
     public async hold(holder: H, params: ICoinHoldDto, isDispatchEvent: boolean): Promise<void> {
-        let { coinUid, amount, from, initiatorUid } = params;
+        let { coinUid, value, objectUid, initiatorUid } = params;
         if (await holder.stub.hasNotState(coinUid)) {
             throw new CoinNotFoundError(coinUid);
         }
-        if (await holder.stub.hasNotState(from)) {
-            throw new CoinObjectNotFoundError(from);
+        if (await holder.stub.hasNotState(objectUid)) {
+            throw new CoinObjectNotFoundError(objectUid);
         }
-        await this.getManager(holder.stub, coinUid).hold(coinUid, from, amount);
+        await this.getManager(holder.stub, coinUid).hold(coinUid, objectUid, value);
         if (isDispatchEvent) {
-            await holder.stub.dispatch(new CoinHoldedEvent({ objectUid: from, coinUid, amount, initiatorUid }));
+            await holder.stub.dispatch(new CoinHoldedEvent({ objectUid, coinUid, value, initiatorUid }));
         }
     }
 
     public async unhold(holder: H, params: ICoinUnholdDto, isDispatchEvent: boolean): Promise<void> {
-        let { coinUid, amount, from, initiatorUid } = params;
+        let { coinUid, value, objectUid, initiatorUid } = params;
         if (await holder.stub.hasNotState(coinUid)) {
             throw new CoinNotFoundError(coinUid);
         }
-        if (await holder.stub.hasNotState(from)) {
-            throw new CoinObjectNotFoundError(from);
+        if (await holder.stub.hasNotState(objectUid)) {
+            throw new CoinObjectNotFoundError(objectUid);
         }
-        await this.getManager(holder.stub, coinUid).unhold(coinUid, from, amount);
+        await this.getManager(holder.stub, coinUid).unhold(coinUid, objectUid, value);
         if (isDispatchEvent) {
-            await holder.stub.dispatch(new CoinUnholdedEvent({ objectUid: from, coinUid, amount, initiatorUid }));
+            await holder.stub.dispatch(new CoinUnholdedEvent({ objectUid, coinUid, value, initiatorUid }));
         }
     }
 
@@ -170,42 +170,42 @@ export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrap
     // --------------------------------------------------------------------------
 
     public async transfer(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void> {
-        let { coinUid, amount, from, to, initiatorUid } = params;
+        let { coinUid, value, objectUid, to, initiatorUid } = params;
         await this.validateTransfer(holder, params);
-        await this.getManager(holder.stub, coinUid).transfer(coinUid, from, to, amount);
+        await this.getManager(holder.stub, coinUid).transfer(coinUid, objectUid, to, value);
         if (isDispatchEvent) {
-            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid, from, to, amount, initiatorUid }));
+            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid, objectUid, to, value, initiatorUid }));
         }
     }
 
     public async transferToHeld(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void> {
-        let { coinUid, amount, from, to, initiatorUid } = params;
+        let { coinUid, value, objectUid, to, initiatorUid } = params;
         await this.validateTransfer(holder, params);
-        await this.getManager(holder.stub, coinUid).transferToHeld(coinUid, from, to, amount);
+        await this.getManager(holder.stub, coinUid).transferToHeld(coinUid, objectUid, to, value);
         if (isDispatchEvent) {
-            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid, from, to, amount, initiatorUid }));
-            await holder.stub.dispatch(new CoinHoldedEvent({ objectUid: params.to, coinUid, amount, initiatorUid }));
+            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid, objectUid, to, value, initiatorUid }));
+            await holder.stub.dispatch(new CoinHoldedEvent({ objectUid: params.to, coinUid, value, initiatorUid }));
         }
     }
 
     public async transferFromHeld(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void> {
-        let { coinUid, amount, from, to, initiatorUid } = params;
+        let { coinUid, value, objectUid, to, initiatorUid } = params;
         await this.validateTransfer(holder, params);
-        await this.getManager(holder.stub, coinUid).transferFromHeld(coinUid, from, to, amount);
+        await this.getManager(holder.stub, coinUid).transferFromHeld(coinUid, objectUid, to, value);
         if (isDispatchEvent) {
-            await holder.stub.dispatch(new CoinUnholdedEvent({ objectUid: params.from, coinUid, amount, initiatorUid }));
-            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid, from, to, amount, initiatorUid }));
+            await holder.stub.dispatch(new CoinUnholdedEvent({ objectUid, coinUid, value, initiatorUid }));
+            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid, objectUid, to, value, initiatorUid }));
         }
     }
 
     public async transferFromToHeld(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void> {
-        let { coinUid, amount, from, to, initiatorUid } = params;
+        let { coinUid, value, objectUid, to, initiatorUid } = params;
         await this.validateTransfer(holder, params);
-        await this.getManager(holder.stub, coinUid).transferFromToHeld(coinUid, from, to, amount);
+        await this.getManager(holder.stub, coinUid).transferFromToHeld(coinUid, objectUid, to, value);
         if (isDispatchEvent) {
-            await holder.stub.dispatch(new CoinUnholdedEvent({ objectUid: params.from, coinUid, amount, initiatorUid }));
-            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid, from, to, amount, initiatorUid }));
-            await holder.stub.dispatch(new CoinHoldedEvent({ objectUid: params.to, coinUid, amount, initiatorUid }));
+            await holder.stub.dispatch(new CoinUnholdedEvent({ objectUid, coinUid, value, initiatorUid }));
+            await holder.stub.dispatch(new CoinTransferredEvent({ coinUid, objectUid, to, value, initiatorUid }));
+            await holder.stub.dispatch(new CoinHoldedEvent({ objectUid: params.to, coinUid, value, initiatorUid }));
         }
     }
 

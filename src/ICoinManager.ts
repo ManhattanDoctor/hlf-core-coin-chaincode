@@ -12,17 +12,17 @@ export interface ICoinManager<T extends ICoin = ICoin> {
     accountSet(item: ICoinAccount): Promise<ICoinAccount>;
     accountList(coin: UID): Promise<Array<ICoinAccount>>;
 
-    emit(coin: T | string, to: string, amount: string): Promise<ICoinMovement>;
-    emitHeld(coin: T | string, to: string, amount: string): Promise<ICoinMovement>;
+    emit(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>;
+    emitHeld(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>;
 
-    burn(coin: T | string, from: string, amount: string): Promise<ICoinMovement>;
-    burnHeld(coin: T | string, from: string, amount: string): Promise<ICoinMovement>;
+    burn(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>;
+    burnHeld(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>;
 
-    nullify(coin: T | string, from: string): Promise<ICoinNullify>;
-    nullifyHeld(coin: T | string, from: string): Promise<ICoinNullify>;
+    nullify(coin: T | string, objectUid: string): Promise<ICoinNullify>;
+    nullifyHeld(coin: T | string, objectUid: string): Promise<ICoinNullify>;
 
-    hold(coin: T | string, from: string, amount: string): Promise<ICoinMovement>;
-    unhold(coin: T | string, from: string, amount: string): Promise<ICoinMovement>
+    hold(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>;
+    unhold(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>
 
     transfer(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>;
     transferToHeld(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>;
