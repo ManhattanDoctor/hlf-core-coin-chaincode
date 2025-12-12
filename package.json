@@ -1,7 +1,7 @@
 {
     "name": "@hlf-core/coin-chaincode",
     "version": "3.6.16",
-    "description": "Hyperledger Fabric coin chaincode classes",
+    "description": "TypeScript library for managing digital tokens (coins) in Hyperledger Fabric blockchain. Implements complete lifecycle operations: creation, emission, transfer, hold/escrow, and burning of digital assets with event support.",
     "main": "./cjs/public-api.js",
     "module": "./esm/public-api.js",
     "exports": {
@@ -17,7 +17,7 @@
     "license": "ISC",
     "dependencies": {
         "@hlf-core/chaincode": "~3.6.1",
-        "@hlf-core/coin": "~3.2.27"
+        "@hlf-core/coin": "~3.2.29"
     },
     "devDependencies": {
         "gulp-npm-module-publisher": "~3.0.5"
@@ -27,6 +27,22 @@
         "url": "git+https://github.com/ManhattanDoctor/hlf-core-transport-chaincode"
     },
     "keywords": [
+        "hyperledger",
+        "hyperledger-fabric",
+        "fabric",
+        "blockchain",
+        "chaincode",
+        "smart-contract",
+        "token",
+        "coin",
+        "cryptocurrency",
+        "digital-asset",
+        "wallet",
+        "escrow",
+        "hold",
+        "transfer",
+        "emit",
+        "burn",
         "typescript"
     ],
     "bugs": {

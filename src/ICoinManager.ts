@@ -12,33 +12,33 @@ export interface ICoinManager<T extends ICoin = ICoin> {
     accountSet(item: ICoinAccount): Promise<ICoinAccount>;
     accountList(coin: UID): Promise<Array<ICoinAccount>>;
 
-    emit(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>;
-    emitHeld(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>;
+    emit(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>;
+    emitHeld(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>;
 
-    burn(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>;
-    burnHeld(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>;
+    burn(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>;
+    burnHeld(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>;
 
     nullify(coin: T | string, objectUid: string): Promise<ICoinNullify>;
     nullifyHeld(coin: T | string, objectUid: string): Promise<ICoinNullify>;
 
-    hold(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>;
-    unhold(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>
+    hold(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>;
+    unhold(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>
 
-    transfer(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>;
-    transferToHeld(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>;
-    transferFromHeld(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>;
-    transferFromToHeld(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>;
+    transfer(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>;
+    transferToHeld(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>;
+    transferFromHeld(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>;
+    transferFromToHeld(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>;
 }
 
 export interface ICoinNullify {
     coin: Coin;
-    amount: string;
+    value: string;
 }
 export interface ICoinMovement {
     coin: Coin;
     account: CoinAccount;
 }
 export interface ICoinTransfer {
-    to: CoinAccount;
-    from: CoinAccount;
+    object: CoinAccount;
+    target: CoinAccount;
 }

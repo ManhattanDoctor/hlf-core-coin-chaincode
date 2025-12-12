@@ -8,7 +8,7 @@
 ## 🚀 Возможности
 
 - **Полный жизненный цикл токенов**: создание, эмиссия, сжигание, перевод
-- **Система удержания**: временная блокировка средств с возможностью разблокировки
+- **Система удержания (hold)**: временная блокировка средств с возможностью разблокировки
 - **Гибкая архитектура**: модульная структура с возможностью расширения
 - **Строгая типизация**: полная поддержка TypeScript
 - **Событийная модель**: автоматическая генерация событий для интеграции
@@ -22,6 +22,8 @@
 - [Архитектура](#архитектура)
 - [API Документация](#api-документация)
 - [Примеры использования](#примеры-использования)
+- [DTO Интерфейсы](#dto-интерфейсы)
+- [События](#события)
 - [Структура проекта](#структура-проекта)
 - [Разработка](#разработка)
 
@@ -35,8 +37,8 @@ npm install @hlf-core/coin-chaincode
 
 ```json
 {
-  "@hlf-core/coin": "^1.0.0",
-  "@hlf-core/chaincode": "^1.0.0",
+  "@hlf-core/coin": "~3.2.29",
+  "@hlf-core/chaincode": "~3.6.1",
   "@ts-core/common": "^1.0.0",
   "lodash": "^4.17.21"
 }
@@ -147,23 +149,33 @@ remove(item: UID): Promise<void>
 
 ```typescript
 // Эмиссия токенов
-emit(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>
-emitHeld(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>
+emit(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>
+emitHeld(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>
 
 // Сжигание токенов
-burn(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>
-burnHeld(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>
+burn(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>
+burnHeld(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>
 
-// Удержание токенов
-hold(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>
-unhold(coin: T | string, objectUid: string, amount: string): Promise<ICoinMovement>
+// Удержание токенов (hold)
+hold(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>
+unhold(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>
+
+// Нулификация (обнуление баланса)
+nullify(coin: T | string, objectUid: string): Promise<ICoinNullify>
+nullifyHeld(coin: T | string, objectUid: string): Promise<ICoinNullify>
 
 // Переводы
-transfer(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>
-transferToHeld(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>
-transferFromHeld(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>
-transferFromToHeld(coin: T | string, from: string, to: string, amount: string): Promise<ICoinTransfer>
+transfer(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>
+transferToHeld(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>
+transferFromHeld(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>
+transferFromToHeld(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>
 ```
+
+**Параметры:**
+- `coin` - UID монеты или объект монеты
+- `objectUid` - UID отправителя (для transfer операций)
+- `target` - UID получателя (для transfer операций)
+- `value` - Сумма операции в строковом формате
 
 #### Работа со счетами
 
@@ -191,6 +203,10 @@ emitHeld(holder: H, params: ICoinEmitDto, isDispatchEvent: boolean): Promise<voi
 burn(holder: H, params: ICoinBurnDto, isDispatchEvent: boolean): Promise<void>
 burnHeld(holder: H, params: ICoinBurnDto, isDispatchEvent: boolean): Promise<void>
 
+// Нулификация с валидацией и событиями
+nullify(holder: H, params: ICoinNullifyDto, isDispatchEvent: boolean): Promise<void>
+nullifyHeld(holder: H, params: ICoinNullifyDto, isDispatchEvent: boolean): Promise<void>
+
 // Удержание с валидацией и событиями
 hold(holder: H, params: ICoinHoldDto, isDispatchEvent: boolean): Promise<void>
 unhold(holder: H, params: ICoinUnholdDto, isDispatchEvent: boolean): Promise<void>
@@ -205,6 +221,11 @@ transferFromToHeld(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean
 get<T extends ICoin>(holder: H, params: ICoinGetDto): Promise<T>
 balanceGet(holder: H, params: ICoinBalanceGetDto): Promise<ICoinBalanceGetDtoResponse>
 ```
+
+**Параметры:**
+- `holder` - Объект с доступом к stub (IStubHolder)
+- `params` - DTO с параметрами операции
+- `isDispatchEvent` - Генерировать ли события
 
 ## 💡 Примеры использования
 
@@ -230,7 +251,7 @@ console.log(`Создан токен: ${token.id}, владелец: ${token.own
 await service.emit(holder, {
     coinUid: token.uid,
     objectUid: 'issuer-uid',
-    amount: '1000000'
+    value: '1000000'
 }, true);
 
 // Распределение токенов пользователям
@@ -238,9 +259,9 @@ const users = ['user1', 'user2', 'user3'];
 for (const user of users) {
     await service.transfer(holder, {
         coinUid: token.uid,
-        from: 'issuer-uid',
-        to: user,
-        amount: '1000',
+        objectUid: 'issuer-uid',
+        target: user,
+        value: '1000',
         initiatorUid: 'issuer-uid'
     }, true);
 }
@@ -253,7 +274,7 @@ for (const user of users) {
 await service.hold(holder, {
     coinUid: token.uid,
     objectUid: 'user1',
-    amount: '100',
+    value: '100',
     initiatorUid: 'escrow-service'
 }, true);
 
@@ -269,7 +290,7 @@ console.log(`Доступно: ${balance.inUse}, удержано: ${balance.hel
 await service.unhold(holder, {
     coinUid: token.uid,
     objectUid: 'user1',
-    amount: '100',
+    value: '100',
     initiatorUid: 'escrow-service'
 }, true);
 ```
@@ -280,19 +301,44 @@ await service.unhold(holder, {
 // Перевод из удержанных средств в обычные
 await service.transferFromHeld(holder, {
     coinUid: token.uid,
-    from: 'user1',
-    to: 'user2',
-    amount: '50',
+    objectUid: 'user1',
+    target: 'user2',
+    value: '50',
     initiatorUid: 'payment-service'
 }, true);
 
 // Перевод в удержание
 await service.transferToHeld(holder, {
     coinUid: token.uid,
-    from: 'user2',
-    to: 'user3',
-    amount: '25',
+    objectUid: 'user2',
+    target: 'user3',
+    value: '25',
     initiatorUid: 'escrow-service'
+}, true);
+
+// Перевод из удержания отправителя в удержание получателя
+await service.transferFromToHeld(holder, {
+    coinUid: token.uid,
+    objectUid: 'user3',
+    target: 'user1',
+    value: '10',
+    initiatorUid: 'escrow-service'
+}, true);
+```
+
+### Нулификация балансов
+
+```typescript
+// Обнулить обычный баланс пользователя
+await service.nullify(holder, {
+    coinUid: token.uid,
+    objectUid: 'user1'
+}, true);
+
+// Обнулить удержанный баланс
+await service.nullifyHeld(holder, {
+    coinUid: token.uid,
+    objectUid: 'user1'
 }, true);
 ```
 
@@ -304,9 +350,9 @@ import { CoinNotFoundError, CoinFromToEqualsError } from '@hlf-core/coin-chainco
 try {
     await service.transfer(holder, {
         coinUid: 'non-existent-coin',
-        from: 'user1',
-        to: 'user2',
-        amount: '100',
+        objectUid: 'user1',
+        target: 'user2',
+        value: '100',
         initiatorUid: 'user1'
     }, true);
 } catch (error) {
@@ -317,6 +363,131 @@ try {
     } else {
         console.error('Неизвестная ошибка:', error);
     }
+}
+```
+
+## 📦 DTO Интерфейсы
+
+### ICoinTransferDto
+```typescript
+interface ICoinTransferDto {
+    coinUid: string;        // UID монеты
+    objectUid: string;      // UID отправителя
+    target: string;         // UID получателя
+    value: string;          // Сумма перевода
+    initiatorUid?: string;  // UID инициатора операции
+}
+```
+
+### ICoinEmitDto / ICoinBurnDto
+```typescript
+interface ICoinEmitDto {
+    coinUid: string;        // UID монеты
+    objectUid: string;      // UID получателя (для emit) / отправителя (для burn)
+    value: string;          // Сумма эмиссии/сжигания
+    initiatorUid?: string;  // UID инициатора операции
+}
+```
+
+### ICoinHoldDto / ICoinUnholdDto
+```typescript
+interface ICoinHoldDto {
+    coinUid: string;        // UID монеты
+    objectUid: string;      // UID владельца средств
+    value: string;          // Сумма удержания/разблокировки
+    initiatorUid?: string;  // UID инициатора операции
+}
+```
+
+### ICoinNullifyDto
+```typescript
+interface ICoinNullifyDto {
+    coinUid: string;        // UID монеты
+    objectUid: string;      // UID владельца счета
+}
+```
+
+### ICoinBalanceGetDto
+```typescript
+interface ICoinBalanceGetDto {
+    coinUid: string;        // UID монеты
+    objectUid: string;      // UID владельца счета
+}
+```
+
+### ICoinBalanceGetDtoResponse
+```typescript
+interface ICoinBalanceGetDtoResponse {
+    inUse: string;          // Доступный баланс
+    held: string;           // Удержанный баланс
+    total: string;          // Общий баланс (inUse + held)
+}
+```
+
+## 📡 События
+
+Библиотека генерирует события для интеграции с внешними системами:
+
+### CoinEmittedEvent
+Генерируется при эмиссии токенов (emit/emitHeld).
+```typescript
+{
+    coinUid: string;
+    objectUid: string;
+    value: string;
+}
+```
+
+### CoinBurnedEvent
+Генерируется при сжигании токенов (burn/burnHeld).
+```typescript
+{
+    coinUid: string;
+    objectUid: string;
+    value: string;
+}
+```
+
+### CoinTransferredEvent
+Генерируется при переводе токенов.
+```typescript
+{
+    coinUid: string;
+    objectUid: string;
+    target: string;
+    value: string;
+    initiatorUid?: string;
+}
+```
+
+### CoinHoldedEvent
+Генерируется при удержании средств.
+```typescript
+{
+    coinUid: string;
+    objectUid: string;
+    value: string;
+    initiatorUid?: string;
+}
+```
+
+### CoinUnholdedEvent
+Генерируется при разблокировке удержанных средств.
+```typescript
+{
+    coinUid: string;
+    objectUid: string;
+    value: string;
+    initiatorUid?: string;
+}
+```
+
+### CoinNullifiedEvent
+Генерируется при нулификации баланса.
+```typescript
+{
+    coinUid: string;
+    objectUid: string;
 }
 ```
 
@@ -366,9 +537,26 @@ npm test
 npm run lint
 ```
 
+## ⚠️ Важные замечания
+
+### Безопасность
+- Библиотека не проверяет права доступа - это ответственность вызывающего кода
+- Все операции должны проходить через endorsement policy сети Hyperledger Fabric
+- Валидация amount/value выполняется на уровне CoinAccount
+
+### Атомарность
+- Операции transfer выполняют множественные read/write операции
+- Консистентность гарантируется через read-write sets механизм Hyperledger Fabric
+- Параллельные транзакции могут привести к MVCC_READ_CONFLICT
+
+### Производительность
+- Методы transfer делают 6+ операций с state
+- Рекомендуется батчинг операций где возможно
+- Пустые счета автоматически удаляются для экономии места
+
 ## 📄 Лицензия
 
-Этот проект лицензирован под MIT License - см. файл [LICENSE](LICENSE) для деталей.
+Этот проект лицензирован под ISC License - см. файл [LICENSE](LICENSE) для деталей.
 
 ## 🆘 Поддержка
 
@@ -380,8 +568,8 @@ npm run lint
 
 ## 👨‍💻 Автор
 
-**Renat Gubaev**  
-📧 Email: [renat.gubaev@gmail.com](mailto:renat.gubaev@gmail.com)  
+**Renat Gubaev**
+📧 Email: [renat.gubaev@gmail.com](mailto:renat.gubaev@gmail.com)
 🐙 GitHub: [@ManhattanDoctor](https://github.com/ManhattanDoctor)
 
 ---
