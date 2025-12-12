@@ -24,10 +24,10 @@ export interface ICoinManager<T extends ICoin = ICoin> {
     hold(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>;
     unhold(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>
 
-    transfer(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>;
-    transferToHeld(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>;
-    transferFromHeld(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>;
-    transferFromToHeld(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>;
+    transfer(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer>;
+    transferToHeld(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer>;
+    transferFromHeld(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer>;
+    transferFromToHeld(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer>;
 }
 
 export interface ICoinNullify {

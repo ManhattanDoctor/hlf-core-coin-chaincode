@@ -165,16 +165,16 @@ nullify(coin: T | string, objectUid: string): Promise<ICoinNullify>
 nullifyHeld(coin: T | string, objectUid: string): Promise<ICoinNullify>
 
 // Переводы
-transfer(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>
-transferToHeld(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>
-transferFromHeld(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>
-transferFromToHeld(coin: T | string, objectUid: string, target: string, value: string): Promise<ICoinTransfer>
+transfer(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer>
+transferToHeld(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer>
+transferFromHeld(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer>
+transferFromToHeld(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer>
 ```
 
 **Параметры:**
 - `coin` - UID монеты или объект монеты
 - `objectUid` - UID отправителя (для transfer операций)
-- `target` - UID получателя (для transfer операций)
+- `targetUid` - UID получателя (для transfer операций)
 - `value` - Сумма операции в строковом формате
 
 #### Работа со счетами
@@ -260,7 +260,7 @@ for (const user of users) {
     await service.transfer(holder, {
         coinUid: token.uid,
         objectUid: 'issuer-uid',
-        target: user,
+        targetUid: user,
         value: '1000',
         initiatorUid: 'issuer-uid'
     }, true);
@@ -302,7 +302,7 @@ await service.unhold(holder, {
 await service.transferFromHeld(holder, {
     coinUid: token.uid,
     objectUid: 'user1',
-    target: 'user2',
+    targetUid: 'user2',
     value: '50',
     initiatorUid: 'payment-service'
 }, true);
@@ -311,7 +311,7 @@ await service.transferFromHeld(holder, {
 await service.transferToHeld(holder, {
     coinUid: token.uid,
     objectUid: 'user2',
-    target: 'user3',
+    targetUid: 'user3',
     value: '25',
     initiatorUid: 'escrow-service'
 }, true);
@@ -320,7 +320,7 @@ await service.transferToHeld(holder, {
 await service.transferFromToHeld(holder, {
     coinUid: token.uid,
     objectUid: 'user3',
-    target: 'user1',
+    targetUid: 'user1',
     value: '10',
     initiatorUid: 'escrow-service'
 }, true);
@@ -351,7 +351,7 @@ try {
     await service.transfer(holder, {
         coinUid: 'non-existent-coin',
         objectUid: 'user1',
-        target: 'user2',
+        targetUid: 'user2',
         value: '100',
         initiatorUid: 'user1'
     }, true);
@@ -373,7 +373,7 @@ try {
 interface ICoinTransferDto {
     coinUid: string;        // UID монеты
     objectUid: string;      // UID отправителя
-    target: string;         // UID получателя
+    targetUid: string;      // UID получателя
     value: string;          // Сумма перевода
     initiatorUid?: string;  // UID инициатора операции
 }
@@ -454,7 +454,7 @@ interface ICoinBalanceGetDtoResponse {
 {
     coinUid: string;
     objectUid: string;
-    target: string;
+    targetUid: string;
     value: string;
     initiatorUid?: string;
 }
