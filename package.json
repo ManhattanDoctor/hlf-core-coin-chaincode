@@ -1,6 +1,6 @@
 {
     "name": "@hlf-core/coin-chaincode",
-    "version": "3.6.16",
+    "version": "3.6.17",
     "description": "TypeScript library for managing digital tokens (coins) in Hyperledger Fabric blockchain. Implements complete lifecycle operations: creation, emission, transfer, hold/escrow, and burning of digital assets with event support.",
     "main": "./cjs/public-api.js",
     "module": "./esm/public-api.js",
