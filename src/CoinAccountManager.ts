@@ -35,7 +35,6 @@ export class CoinAccountManager extends EntityManagerImpl<CoinAccount> {
         return TransformUtil.toClass(CoinAccount, item);
     }
 
-
     // --------------------------------------------------------------------------
     //
     //  Public Properties

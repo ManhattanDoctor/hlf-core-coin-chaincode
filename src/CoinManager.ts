@@ -83,10 +83,10 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
         return { coin, value };
     }
 
-    public async transfer(coin: T | string, object: string, targetUid: string, value: string): Promise<ICoinTransfer> {
+    public async transfer(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer> {
         coin = await this.coinGet(coin);
         let targetAccount = await this.accountGet(coin, targetUid);
-        let objectAccount = await this.accountGet(coin, object);
+        let objectAccount = await this.accountGet(coin, objectUid);
 
         await this._transfer(coin, objectAccount, targetAccount, value);
 
@@ -96,10 +96,10 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
         return { object: objectAccount, target: targetAccount };
     }
 
-    public async transferFromHeld(coin: T | string, object: string, targetUid: string, value: string): Promise<ICoinTransfer> {
+    public async transferFromHeld(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer> {
         coin = await this.coinGet(coin);
         let targetAccount = await this.accountGet(coin, targetUid);
-        let objectAccount = await this.accountGet(coin, object);
+        let objectAccount = await this.accountGet(coin, objectUid);
 
         await this._transferFromHeld(coin, objectAccount, targetAccount, value);
 
@@ -109,10 +109,10 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
         return { object: objectAccount, target: targetAccount };
     }
 
-    public async transferToHeld(coin: T | string, object: string, targetUid: string, value: string): Promise<ICoinTransfer> {
+    public async transferToHeld(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer> {
         coin = await this.coinGet(coin);
         let targetAccount = await this.accountGet(coin, targetUid);
-        let objectAccount = await this.accountGet(coin, object);
+        let objectAccount = await this.accountGet(coin, objectUid);
 
         await this._transferToHeld(coin, objectAccount, targetAccount, value);
 
@@ -122,10 +122,10 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
         return { object: objectAccount, target: targetAccount };
     }
 
-    public async transferFromToHeld(coin: T | string, object: string, targetUid: string, value: string): Promise<ICoinTransfer> {
+    public async transferFromToHeld(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer> {
         coin = await this.coinGet(coin);
         let targetAccount = await this.accountGet(coin, targetUid);
-        let objectAccount = await this.accountGet(coin, object);
+        let objectAccount = await this.accountGet(coin, objectUid);
 
         await this._transferFromToHeld(coin, objectAccount, targetAccount, value);
 
@@ -277,7 +277,7 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
     //
     // --------------------------------------------------------------------------
 
-    public async accountGet(coin: T, object: UID): Promise<ICoinAccount> {
+    public async accountGet(coin: UID, object: UID): Promise<ICoinAccount> {
         let item = await this.account.get(CoinAccountUtil.createUid(coin, object));
         if (_.isNil(item)) {
             item = CoinAccountUtil.create(coin, object);

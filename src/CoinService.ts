@@ -7,6 +7,7 @@ import { CoinManager } from './CoinManager';
 import * as _ from 'lodash';
 
 export class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrapper {
+    
     // --------------------------------------------------------------------------
     //
     //  Constructor
