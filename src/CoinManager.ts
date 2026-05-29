@@ -1,4 +1,4 @@
-import { UID, TransformUtil, ILogger } from '@ts-core/common';
+import { UID, TransformUtil, ILogger, MathUtil } from '@ts-core/common';
 import { CoinAccountManager } from './CoinAccountManager';
 import { Coin, ICoin, ICoinAccount, CoinUtil, CoinAccountUtil } from '@hlf-core/coin';
 import { ICoinManager, ICoinMovement, ICoinNullify, ICoinTransfer } from './ICoinManager';
@@ -194,14 +194,18 @@ export class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T> i
     protected async _nullify(item: ICoinAccountDetails<T>): Promise<string> {
         let { coin, account } = item;
         let value = account.nullify();
-        coin.balance.nullify();
+        if (!MathUtil.equals(value, '0')) {
+            coin.balance.remove(value);
+        }
         return value;
     }
 
     protected async _nullifyHeld(item: ICoinAccountDetails<T>): Promise<string> {
         let { coin, account } = item;
-        let value = coin.balance.nullifyHeld();
-        account.nullifyHeld();
+        let value = account.nullifyHeld();
+        if (!MathUtil.equals(value, '0')) {
+            coin.balance.removeHeld(value);
+        }
         return value;
     }
 

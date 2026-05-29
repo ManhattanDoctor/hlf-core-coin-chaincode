@@ -37,12 +37,12 @@ npm install @hlf-core/coin-chaincode
 
 ```json
 {
-  "@hlf-core/coin": "~3.2.29",
-  "@hlf-core/chaincode": "~3.6.1",
-  "@ts-core/common": "^1.0.0",
-  "lodash": "^4.17.21"
+  "@hlf-core/coin": "~3.2.30",
+  "@hlf-core/chaincode": "~3.6.1"
 }
 ```
+
+Транзитивно подтягиваются `@ts-core/common` (v3.x, через `@hlf-core/chaincode`/`@hlf-core/coin`), `@hlf-core/common`, `fabric-shim`, `reflect-metadata` и `lodash`.
 
 ## 🚀 Быстрый старт
 
