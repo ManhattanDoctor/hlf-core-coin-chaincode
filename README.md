@@ -1,7 +1,9 @@
-# HLF Core Coin Chaincode
+# @hlf-core/coin-chaincode
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Hyperledger Fabric](https://img.shields.io/badge/Hyperledger%20Fabric-2F4F4F?style=flat-square&logo=hyperledger&logoColor=white)](https://hyperledger-fabric.readthedocs.io/)
+> TypeScript библиотека управления токенами на стороне chaincode: счета, эмиссия, переводы, удержание
+
+[![npm version](https://img.shields.io/npm/v/@hlf-core/coin-chaincode.svg)](https://www.npmjs.com/package/@hlf-core/coin-chaincode)
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
 Модуль для управления токенами (монетами) и их счетами в блокчейн-среде Hyperledger Fabric. Реализует полный набор операций для создания, эмиссии, перевода, удержания и сжигания цифровых активов с поддержкой событий и строгой типизацией.
 
@@ -608,24 +610,23 @@ npm run lint
 - Пустые счета автоматически удаляются для экономии места
 - `accountList` и удаление монеты обходят все счета монеты в одной транзакции — стоимость линейна по числу держателей и на крупных выпусках упирается в лимиты Fabric
 
-## 📄 Лицензия
+## Лицензия
 
-Этот проект лицензирован под ISC License - см. файл [LICENSE](LICENSE) для деталей.
+ISC
 
-## 🆘 Поддержка
+## Автор
 
-Если у вас есть вопросы или проблемы:
+**Ренат Губаев**
+- Email: renat.gubaev@gmail.com
+- GitHub: [@ManhattanDoctor](https://github.com/ManhattanDoctor)
 
-1. Проверьте [Issues](../../issues) на наличие похожих проблем
-2. Создайте новый Issue с подробным описанием
-3. Обратитесь к команде разработки
+## Ссылки
 
-## 👨‍💻 Автор
+- [GitHub Repository](https://github.com/ManhattanDoctor/hlf-core-coin-chaincode)
+- [NPM Package](https://www.npmjs.com/package/@hlf-core/coin-chaincode)
+- [Issue Tracker](https://github.com/ManhattanDoctor/hlf-core-coin-chaincode/issues)
+- [Hyperledger Fabric Documentation](https://hyperledger-fabric.readthedocs.io/)
 
-**Renat Gubaev**
-📧 Email: [renat.gubaev@gmail.com](mailto:renat.gubaev@gmail.com)
-🐙 GitHub: [@ManhattanDoctor](https://github.com/ManhattanDoctor)
+## Поддержка
 
----
-
-**Сделано с ❤️ для Hyperledger Fabric сообщества**
+Если вы нашли баг или у вас есть предложение по улучшению, пожалуйста, создайте issue в [GitHub Issues](https://github.com/ManhattanDoctor/hlf-core-coin-chaincode/issues).
