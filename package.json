@@ -1,6 +1,6 @@
 {
     "name": "@hlf-core/coin-chaincode",
-    "version": "3.6.21",
+    "version": "4.0.0",
     "description": "TypeScript library for token management on the Hyperledger Fabric chaincode side: accounts, emission, transfers, hold and burning with event dispatching",
     "main": "./cjs/public-api.js",
     "module": "./esm/public-api.js",
@@ -17,7 +17,7 @@
     "license": "ISC",
     "dependencies": {
         "@hlf-core/chaincode": "~3.6.6",
-        "@hlf-core/coin": "~3.2.34"
+        "@hlf-core/coin": "^4.0.0"
     },
     "devDependencies": {
         "gulp-npm-module-publisher": "~3.0.5"

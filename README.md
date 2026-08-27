@@ -129,24 +129,30 @@ class CoinFromToEqualsError extends Error<string>
 
 ### Хранение счетов в состоянии
 
-Монета и её счета — разные записи состояния. Монета лежит по собственному `uid`, а каждый счёт — по составному ключу «пространство имён + монета + владелец»:
+Монета и её счета — разные записи состояния. Монета лежит по собственному `uid`, а каждый счёт — по составному ключу «пространство имён + монета + владелец + счёт»:
 
 ```
-coin_owner1_8_BTC                        ← сама монета
-→coin~account:coin_owner1_8_BTC~user1    ← счёт user1
-→coin~account:coin_owner1_8_BTC~user2    ← счёт user2
+coin_owner1_8_BTC                              ← сама монета
+→coin~account:coin_owner1_8_BTC~user1~OWNER    ← основной счёт user1
+→coin~account:coin_owner1_8_BTC~user1~PAYOUT   ← второй счёт того же владельца
+→coin~account:coin_owner1_8_BTC~user2~OWNER    ← счёт user2
 ```
 
-Такая схема выбрана потому, что в состоянии Hyperledger Fabric нет поиска по полям: найти запись можно только по точному ключу либо диапазонным запросом по началу ключа. Монета в ключе стоит перед владельцем, поэтому все счета одной монеты лежат в состоянии подряд и выбираются одним диапазонным запросом — на этом построены `accountList` и удаление монеты.
+Последняя часть ключа — идентификатор счёта. У одного владельца по одной монете может быть несколько счетов с разным назначением; менеджер их различает, но о смысле значений не знает — словарь задаёт приложение.
+
+Такая схема выбрана потому, что в состоянии Hyperledger Fabric нет поиска по полям: найти запись можно только по точному ключу либо диапазонным запросом по началу ключа. Порядок частей выбран под запросы: монета перед владельцем — все счета одной монеты лежат подряд и выбираются одним диапазонным запросом; владелец перед счётом — так же подряд лежат все счета одного лица.
 
 Ключи собирает `CoinAccountUtil` из `@hlf-core/coin`, менеджеры не склеивают строки самостоятельно:
 
 ```typescript
 // точный ключ одного счёта — используется в accountGet
-CoinAccountUtil.createUid(coinUid, ownerUid);   // →coin~account:coin_owner1_8_BTC~user1
+CoinAccountUtil.createUid(coinUid, ownerUid, id);      // →coin~account:coin_owner1_8_BTC~user1~OWNER
 
 // префикс всех счетов монеты — используется в accountList и accountsRemove
-CoinAccountUtil.createPrefix(coinUid);          // →coin~account:coin_owner1_8_BTC~
+CoinAccountUtil.createPrefix(coinUid);                 // →coin~account:coin_owner1_8_BTC~
+
+// префикс всех счетов одного владельца — используется в accountList с владельцем
+CoinAccountUtil.createPrefix(coinUid, ownerUid);       // →coin~account:coin_owner1_8_BTC~user1~
 ```
 
 Префикс обязательно заканчивается разделителем: без него диапазонный запрос захватил бы счета монет, чей идентификатор начинается так же (`BTC` и `BTC2`, базовая монета и её серийные выпуски).
@@ -165,7 +171,7 @@ public async save(item: CoinAccount): Promise<CoinAccount> {
 }
 ```
 
-Поэтому состояние не засоряется нулевыми счетами, а `accountList` возвращает только тех, у кого есть баланс. Обратная сторона: `accountGet` для владельца без токенов не найдёт записи и вернёт новый пустой счёт, а не `null` — этот счёт попадёт в состояние только после первой операции с ненулевой суммой.
+Поэтому состояние не засоряется нулевыми счетами, а `accountList` возвращает только те счета, где есть баланс. Обратная сторона: `accountGet` для адреса без токенов не найдёт записи и вернёт новый пустой счёт, а не `null` — он попадёт в состояние только после первой операции с ненулевой суммой.
 
 #### Удаление монеты
 
@@ -204,45 +210,47 @@ remove(item: UID): Promise<void>
 
 ```typescript
 // Эмиссия токенов
-emit(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>
-emitHeld(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>
+emit(coin: T | string, object: ICoinAccountObject, value: string): Promise<ICoinMovement>
+emitHeld(coin: T | string, object: ICoinAccountObject, value: string): Promise<ICoinMovement>
 
 // Сжигание токенов
-burn(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>
-burnHeld(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>
+burn(coin: T | string, object: ICoinAccountObject, value: string): Promise<ICoinMovement>
+burnHeld(coin: T | string, object: ICoinAccountObject, value: string): Promise<ICoinMovement>
 
 // Удержание токенов (hold)
-hold(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>
-unhold(coin: T | string, objectUid: string, value: string): Promise<ICoinMovement>
+hold(coin: T | string, object: ICoinAccountObject, value: string): Promise<ICoinMovement>
+unhold(coin: T | string, object: ICoinAccountObject, value: string): Promise<ICoinMovement>
 
 // Нулификация (обнуление баланса)
-nullify(coin: T | string, objectUid: string): Promise<ICoinNullify>
-nullifyHeld(coin: T | string, objectUid: string): Promise<ICoinNullify>
+nullify(coin: T | string, object: ICoinAccountObject): Promise<ICoinNullify>
+nullifyHeld(coin: T | string, object: ICoinAccountObject): Promise<ICoinNullify>
 
 // Переводы
-transfer(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer>
-transferToHeld(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer>
-transferFromHeld(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer>
-transferFromToHeld(coin: T | string, objectUid: string, targetUid: string, value: string): Promise<ICoinTransfer>
+transfer(coin: T | string, object: ICoinAccountObject, target: ICoinAccountObject, value: string): Promise<ICoinTransfer>
+transferToHeld(coin: T | string, object: ICoinAccountObject, target: ICoinAccountObject, value: string): Promise<ICoinTransfer>
+transferFromHeld(coin: T | string, object: ICoinAccountObject, target: ICoinAccountObject, value: string): Promise<ICoinTransfer>
+transferFromToHeld(coin: T | string, object: ICoinAccountObject, target: ICoinAccountObject, value: string): Promise<ICoinTransfer>
 ```
 
 **Параметры:**
 - `coin` - UID монеты или объект монеты
-- `objectUid` - UID отправителя (для transfer операций)
-- `targetUid` - UID получателя (для transfer операций)
+- `object` - адрес счёта, с которым выполняется операция: `{ ownerUid, id }`
+- `target` - адрес счёта получателя (для transfer операций)
 - `value` - Сумма операции в строковом формате
+
+Адрес счёта — пара «владелец + идентификатор счёта». В переводах их два подряд, и объект различает стороны структурой: позиционные строки здесь легко переставить местами, а компилятор бы промолчал.
 
 #### Работа со счетами
 
 ```typescript
 // Получение счета
-accountGet(coin: UID, object: UID): Promise<ICoinAccount>
+accountGet(coin: UID, object: ICoinAccountObject): Promise<ICoinAccount>
 
 // Сохранение счета
 accountSet(item: ICoinAccount): Promise<ICoinAccount>
 
-// Список счетов монеты
-accountList(coin: UID): Promise<Array<ICoinAccount>>
+// Список счетов монеты, либо только счета одного владельца
+accountList(coin: UID, owner?: UID): Promise<Array<ICoinAccount>>
 ```
 
 ### CoinService
@@ -305,7 +313,7 @@ console.log(`Создан токен: ${token.id}, владелец: ${token.own
 // Эмиссия 1,000,000 токенов на счет эмитента
 await service.emit(holder, {
     coinUid: token.uid,
-    objectUid: 'issuer-uid',
+    object: { ownerUid: 'issuer-uid', id: 'OWNER' },
     value: '1000000'
 }, true);
 
@@ -314,8 +322,8 @@ const users = ['user1', 'user2', 'user3'];
 for (const user of users) {
     await service.transfer(holder, {
         coinUid: token.uid,
-        objectUid: 'issuer-uid',
-        targetUid: user,
+        object: { ownerUid: 'issuer-uid', id: 'OWNER' },
+        target: { ownerUid: user, id: 'OWNER' },
         value: '1000',
         initiatorUid: 'issuer-uid'
     }, true);
@@ -328,7 +336,7 @@ for (const user of users) {
 // Удержание 100 токенов на счете пользователя
 await service.hold(holder, {
     coinUid: token.uid,
-    objectUid: 'user1',
+    object: { ownerUid: 'user1', id: 'OWNER' },
     value: '100',
     initiatorUid: 'escrow-service'
 }, true);
@@ -336,7 +344,7 @@ await service.hold(holder, {
 // Проверка баланса (включая удержанные средства)
 const balance = await service.balanceGet(holder, {
     coinUid: token.uid,
-    objectUid: 'user1'
+    object: { ownerUid: 'user1', id: 'OWNER' }
 });
 
 console.log(`Доступно: ${balance.inUse}, удержано: ${balance.held}, всего: ${balance.total}`);
@@ -344,7 +352,7 @@ console.log(`Доступно: ${balance.inUse}, удержано: ${balance.hel
 // Разблокировка удержанных средств
 await service.unhold(holder, {
     coinUid: token.uid,
-    objectUid: 'user1',
+    object: { ownerUid: 'user1', id: 'OWNER' },
     value: '100',
     initiatorUid: 'escrow-service'
 }, true);
@@ -356,8 +364,8 @@ await service.unhold(holder, {
 // Перевод из удержанных средств в обычные
 await service.transferFromHeld(holder, {
     coinUid: token.uid,
-    objectUid: 'user1',
-    targetUid: 'user2',
+    object: { ownerUid: 'user1', id: 'OWNER' },
+    target: { ownerUid: 'user2', id: 'OWNER' },
     value: '50',
     initiatorUid: 'payment-service'
 }, true);
@@ -365,8 +373,8 @@ await service.transferFromHeld(holder, {
 // Перевод в удержание
 await service.transferToHeld(holder, {
     coinUid: token.uid,
-    objectUid: 'user2',
-    targetUid: 'user3',
+    object: { ownerUid: 'user2', id: 'OWNER' },
+    target: { ownerUid: 'user3', id: 'OWNER' },
     value: '25',
     initiatorUid: 'escrow-service'
 }, true);
@@ -374,8 +382,8 @@ await service.transferToHeld(holder, {
 // Перевод из удержания отправителя в удержание получателя
 await service.transferFromToHeld(holder, {
     coinUid: token.uid,
-    objectUid: 'user3',
-    targetUid: 'user1',
+    object: { ownerUid: 'user3', id: 'OWNER' },
+    target: { ownerUid: 'user1', id: 'OWNER' },
     value: '10',
     initiatorUid: 'escrow-service'
 }, true);
@@ -387,13 +395,13 @@ await service.transferFromToHeld(holder, {
 // Обнулить обычный баланс пользователя
 await service.nullify(holder, {
     coinUid: token.uid,
-    objectUid: 'user1'
+    object: { ownerUid: 'user1', id: 'OWNER' }
 }, true);
 
 // Обнулить удержанный баланс
 await service.nullifyHeld(holder, {
     coinUid: token.uid,
-    objectUid: 'user1'
+    object: { ownerUid: 'user1', id: 'OWNER' }
 }, true);
 ```
 
@@ -405,8 +413,8 @@ import { CoinNotFoundError, CoinFromToEqualsError } from '@hlf-core/coin-chainco
 try {
     await service.transfer(holder, {
         coinUid: 'non-existent-coin',
-        objectUid: 'user1',
-        targetUid: 'user2',
+        object: { ownerUid: 'user1', id: 'OWNER' },
+        target: { ownerUid: 'user2', id: 'OWNER' },
         value: '100',
         initiatorUid: 'user1'
     }, true);
@@ -427,8 +435,8 @@ try {
 ```typescript
 interface ICoinTransferDto {
     coinUid: string;        // UID монеты
-    objectUid: string;      // UID отправителя
-    targetUid: string;      // UID получателя
+    object: ICoinAccountObject;  // адрес счёта отправителя
+    target: ICoinAccountObject;  // адрес счёта получателя
     value: string;          // Сумма перевода
     initiatorUid?: string;  // UID инициатора операции
 }
@@ -438,7 +446,7 @@ interface ICoinTransferDto {
 ```typescript
 interface ICoinEmitDto {
     coinUid: string;        // UID монеты
-    objectUid: string;      // UID получателя (для emit) / отправителя (для burn)
+    object: ICoinAccountObject;  // адрес счёта: получателя для emit, отправителя для burn
     value: string;          // Сумма эмиссии/сжигания
     initiatorUid?: string;  // UID инициатора операции
 }
@@ -448,7 +456,7 @@ interface ICoinEmitDto {
 ```typescript
 interface ICoinHoldDto {
     coinUid: string;        // UID монеты
-    objectUid: string;      // UID владельца средств
+    object: ICoinAccountObject;  // адрес счёта, где удерживаются средства
     value: string;          // Сумма удержания/разблокировки
     initiatorUid?: string;  // UID инициатора операции
 }
@@ -458,7 +466,7 @@ interface ICoinHoldDto {
 ```typescript
 interface ICoinNullifyDto {
     coinUid: string;        // UID монеты
-    objectUid: string;      // UID владельца счета
+    object: ICoinAccountObject;  // адрес счёта
 }
 ```
 
@@ -466,7 +474,7 @@ interface ICoinNullifyDto {
 ```typescript
 interface ICoinBalanceGetDto {
     coinUid: string;        // UID монеты
-    objectUid: string;      // UID владельца счета
+    object: ICoinAccountObject;  // адрес счёта
 }
 ```
 
@@ -488,7 +496,7 @@ interface ICoinBalanceGetDtoResponse {
 ```typescript
 {
     coinUid: string;
-    objectUid: string;
+    object: ICoinAccountObject;
     value: string;
 }
 ```
@@ -498,7 +506,7 @@ interface ICoinBalanceGetDtoResponse {
 ```typescript
 {
     coinUid: string;
-    objectUid: string;
+    object: ICoinAccountObject;
     value: string;
 }
 ```
@@ -508,8 +516,8 @@ interface ICoinBalanceGetDtoResponse {
 ```typescript
 {
     coinUid: string;
-    objectUid: string;
-    targetUid: string;
+    object: ICoinAccountObject;
+    target: ICoinAccountObject;
     value: string;
     initiatorUid?: string;
 }
@@ -520,7 +528,7 @@ interface ICoinBalanceGetDtoResponse {
 ```typescript
 {
     coinUid: string;
-    objectUid: string;
+    object: ICoinAccountObject;
     value: string;
     initiatorUid?: string;
 }
@@ -531,7 +539,7 @@ interface ICoinBalanceGetDtoResponse {
 ```typescript
 {
     coinUid: string;
-    objectUid: string;
+    object: ICoinAccountObject;
     value: string;
     initiatorUid?: string;
 }
@@ -542,7 +550,7 @@ interface ICoinBalanceGetDtoResponse {
 ```typescript
 {
     coinUid: string;
-    objectUid: string;
+    object: ICoinAccountObject;
 }
 ```
 

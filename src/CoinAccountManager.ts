@@ -27,8 +27,8 @@ export class CoinAccountManager extends EntityManagerImpl<CoinAccount> {
         return super.save(item);
     }
 
-    public list(coin: UID): Promise<Array<CoinAccount>> {
-        return this.find({ prefix: CoinAccountUtil.createPrefix(coin) });
+    public list(coin: UID, owner?: UID): Promise<Array<CoinAccount>> {
+        return this.find({ prefix: CoinAccountUtil.createPrefix(coin, owner) });
     }
 
     public toEntity(item: any): CoinAccount {
