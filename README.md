@@ -1,41 +1,46 @@
+**English** · [Русский](./README.ru.md)
+
 # @hlf-core/coin-chaincode
 
-> TypeScript библиотека управления токенами на стороне chaincode: счета, эмиссия, переводы, удержание
+> TypeScript library for chaincode-side token management: accounts, emission, transfers, holds
 
 [![npm version](https://img.shields.io/npm/v/@hlf-core/coin-chaincode.svg)](https://www.npmjs.com/package/@hlf-core/coin-chaincode)
+[![Docs](https://img.shields.io/badge/docs-hlf.gnosisai.ru-1f6feb)](https://hlf.gnosisai.ru/docs/packages/coin-chaincode)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
-Модуль для управления токенами (монетами) и их счетами в блокчейн-среде Hyperledger Fabric. Реализует полный набор операций для создания, эмиссии, перевода, удержания и сжигания цифровых активов с поддержкой событий и строгой типизацией.
+Full documentation: https://hlf.gnosisai.ru/docs/packages/coin-chaincode
 
-## 🚀 Возможности
+A module for managing tokens (coins) and their accounts in the Hyperledger Fabric blockchain environment. It implements a complete set of operations for creating, emitting, transferring, holding, and burning digital assets, with event support and strict typing.
 
-- **Полный жизненный цикл токенов**: создание, эмиссия, сжигание, перевод
-- **Система удержания (hold)**: временная блокировка средств с возможностью разблокировки
-- **Гибкая архитектура**: модульная структура с возможностью расширения
-- **Строгая типизация**: полная поддержка TypeScript
-- **Событийная модель**: автоматическая генерация событий для интеграции
-- **Обработка ошибок**: кастомные исключения с детальной информацией
-- **Атомарные операции**: гарантия консистентности данных
+## Features
 
-## 📋 Содержание
+- **Complete token lifecycle**: creation, emission, burning, transfer
+- **Hold system**: temporary locking of funds with the ability to release them
+- **Flexible architecture**: modular structure with extensibility in mind
+- **Strict typing**: full TypeScript support
+- **Event model**: automatic event generation for integration
+- **Error handling**: custom exceptions with detailed information
+- **Atomic operations**: guaranteed data consistency
 
-- [Установка](#установка)
-- [Быстрый старт](#быстрый-старт)
-- [Архитектура](#архитектура)
-- [API Документация](#api-документация)
-- [Примеры использования](#примеры-использования)
-- [DTO Интерфейсы](#dto-интерфейсы)
-- [События](#события)
-- [Структура проекта](#структура-проекта)
-- [Разработка](#разработка)
+## Table of Contents
 
-## 🛠 Установка
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Architecture](#architecture)
+- [API Documentation](#api-documentation)
+- [Usage Examples](#usage-examples)
+- [DTO Interfaces](#dto-interfaces)
+- [Events](#events)
+- [Project Structure](#project-structure)
+- [Development](#development)
+
+## Installation
 
 ```bash
 npm install @hlf-core/coin-chaincode
 ```
 
-### Зависимости
+### Dependencies
 
 ```json
 {
@@ -44,77 +49,77 @@ npm install @hlf-core/coin-chaincode
 }
 ```
 
-Транзитивно подтягиваются `@ts-core/common` (v3.x, через `@hlf-core/chaincode`/`@hlf-core/coin`), `@hlf-core/common`, `fabric-shim`, `reflect-metadata` и `lodash`.
+Pulled in transitively are `@ts-core/common` (v3.x, via `@hlf-core/chaincode`/`@hlf-core/coin`), `@hlf-core/common`, `fabric-shim`, `reflect-metadata`, and `lodash`.
 
-## 🚀 Быстрый старт
+## Quick Start
 
 ```typescript
 import { CoinService, CoinManager } from '@hlf-core/coin-chaincode';
 import { ILogger, IStub } from '@ts-core/common';
 
-// Создание сервиса
-const logger: ILogger = /* ваш логгер */;
+// Create the service
+const logger: ILogger = /* your logger */;
 const service = new CoinService(logger);
 
-// Создание менеджера
-const stub: IStub = /* ваш stub */;
+// Create the manager
+const stub: IStub = /* your stub */;
 const manager = new CoinManager(logger, stub);
 
-// Создание монеты
+// Create a coin
 const coin = manager.create('MYCOIN', 18, 'owner-uid');
 
-// Эмиссия токенов
+// Emit tokens
 await manager.emit(coin, 'user-uid', '1000');
 
-// Перевод между пользователями
+// Transfer between users
 await manager.transfer(coin, 'user-uid', 'another-user-uid', '100');
 ```
 
-## 🏗 Архитектура
+## Architecture
 
-### Основные компоненты
+### Core Components
 
-#### 1. **CoinManager** - Основной менеджер монет
+#### 1. **CoinManager** - Main coin manager
 ```typescript
 class CoinManager<T extends ICoin = ICoin> extends EntityManagerImpl<T>
 ```
-- Управляет жизненным циклом монет
-- Реализует все операции с токенами
-- Работает с CoinAccountManager для управления счетами
+- Manages the coin lifecycle
+- Implements all token operations
+- Works with CoinAccountManager to manage accounts
 
-#### 2. **CoinAccountManager** - Менеджер счетов
+#### 2. **CoinAccountManager** - Account manager
 ```typescript
 class CoinAccountManager extends EntityManagerImpl<CoinAccount>
 ```
-- Управляет счетами пользователей для каждой монеты
-- Автоматически удаляет пустые счета
-- Предоставляет методы для работы с балансами
+- Manages user accounts for each coin
+- Automatically removes empty accounts
+- Provides methods for working with balances
 
-#### 3. **CoinService** - Сервисный слой
+#### 3. **CoinService** - Service layer
 ```typescript
 class CoinService<H extends IStubHolder = IStubHolder> extends LoggerWrapper
 ```
-- Фасад для бизнес-логики
-- Валидация входных параметров
-- Диспатчинг событий
-- Обработка ошибок
+- Facade for business logic
+- Validation of input parameters
+- Event dispatching
+- Error handling
 
-#### 4. **Error Classes** - Система ошибок
+#### 4. **Error Classes** - Error system
 ```typescript
 class CoinNotFoundError extends Error<string>
 class CoinObjectNotFoundError extends Error<string>
 class CoinFromToEqualsError extends Error<string>
 ```
 
-### Диаграмма архитектуры
+### Architecture Diagram
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   CoinService   │────│   CoinManager    │────│ CoinAccountMgr  │
 │                 │    │                  │    │                 │
-│ • Валидация     │    │ • CRUD монет     │    │ • CRUD счетов   │
-│ • События       │    │ • Операции       │    │ • Балансы       │
-│ • Ошибки        │    │ • Переводы       │    │ • Удержания     │
+│ • Validation    │    │ • Coin CRUD      │    │ • Account CRUD  │
+│ • Events        │    │ • Operations     │    │ • Balances      │
+│ • Errors        │    │ • Transfers      │    │ • Holds         │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
          │                       │                       │
          └───────────────────────┼───────────────────────┘
@@ -122,44 +127,44 @@ class CoinFromToEqualsError extends Error<string>
                     ┌─────────────────┐
                     │   IStub/State   │
                     │                 │
-                    │ • Блокчейн      │
-                    │ • Персистентность│
+                    │ • Blockchain    │
+                    │ • Persistence   │
                     └─────────────────┘
 ```
 
-### Хранение счетов в состоянии
+### Storing Accounts in State
 
-Монета и её счета — разные записи состояния. Монета лежит по собственному `uid`, а каждый счёт — по составному ключу «пространство имён + монета + владелец + счёт»:
+A coin and its accounts are separate state records. The coin is stored under its own `uid`, while each account is stored under a composite key: "namespace + coin + owner + account":
 
 ```
-coin_owner1_8_BTC                              ← сама монета
-→coin~account:coin_owner1_8_BTC~user1~OWNER    ← основной счёт user1
-→coin~account:coin_owner1_8_BTC~user1~PAYOUT   ← второй счёт того же владельца
-→coin~account:coin_owner1_8_BTC~user2~OWNER    ← счёт user2
+coin_owner1_8_BTC                              ← the coin itself
+→coin~account:coin_owner1_8_BTC~user1~OWNER    ← user1's primary account
+→coin~account:coin_owner1_8_BTC~user1~PAYOUT   ← a second account of the same owner
+→coin~account:coin_owner1_8_BTC~user2~OWNER    ← user2's account
 ```
 
-Последняя часть ключа — идентификатор счёта. У одного владельца по одной монете может быть несколько счетов с разным назначением; менеджер их различает, но о смысле значений не знает — словарь задаёт приложение.
+The last part of the key is the account identifier. A single owner may have several accounts with different purposes for the same coin; the manager distinguishes between them but knows nothing about the meaning of those values — the vocabulary is defined by the application.
 
-Такая схема выбрана потому, что в состоянии Hyperledger Fabric нет поиска по полям: найти запись можно только по точному ключу либо диапазонным запросом по началу ключа. Порядок частей выбран под запросы: монета перед владельцем — все счета одной монеты лежат подряд и выбираются одним диапазонным запросом; владелец перед счётом — так же подряд лежат все счета одного лица.
+This scheme was chosen because Hyperledger Fabric state has no search by fields: a record can be found only by an exact key or by a range query over the start of the key. The order of the parts is chosen to fit the queries: coin before owner — all accounts of one coin are stored contiguously and selected by a single range query; owner before account — likewise, all accounts of one party are stored contiguously.
 
-Ключи собирает `CoinAccountUtil` из `@hlf-core/coin`, менеджеры не склеивают строки самостоятельно:
+Keys are assembled by `CoinAccountUtil` from `@hlf-core/coin`; the managers do not concatenate strings themselves:
 
 ```typescript
-// точный ключ одного счёта — используется в accountGet
+// exact key of a single account — used in accountGet
 CoinAccountUtil.createUid(coinUid, ownerUid, id);      // →coin~account:coin_owner1_8_BTC~user1~OWNER
 
-// префикс всех счетов монеты — используется в accountList и accountsRemove
+// prefix of all accounts of a coin — used in accountList and accountsRemove
 CoinAccountUtil.createPrefix(coinUid);                 // →coin~account:coin_owner1_8_BTC~
 
-// префикс всех счетов одного владельца — используется в accountList с владельцем
+// prefix of all accounts of a single owner — used in accountList with an owner
 CoinAccountUtil.createPrefix(coinUid, ownerUid);       // →coin~account:coin_owner1_8_BTC~user1~
 ```
 
-Префикс обязательно заканчивается разделителем: без него диапазонный запрос захватил бы счета монет, чей идентификатор начинается так же (`BTC` и `BTC2`, базовая монета и её серийные выпуски).
+The prefix must end with a separator: without it, a range query would capture accounts of coins whose identifier starts the same way (`BTC` and `BTC2`, a base coin and its serial issues).
 
-#### Пустые счета не хранятся
+#### Empty Accounts Are Not Stored
 
-`CoinAccountManager.save` удаляет счёт вместо записи, если он пуст:
+`CoinAccountManager.save` removes an account instead of writing it if it is empty:
 
 ```typescript
 public async save(item: CoinAccount): Promise<CoinAccount> {
@@ -171,128 +176,128 @@ public async save(item: CoinAccount): Promise<CoinAccount> {
 }
 ```
 
-Поэтому состояние не засоряется нулевыми счетами, а `accountList` возвращает только те счета, где есть баланс. Обратная сторона: `accountGet` для адреса без токенов не найдёт записи и вернёт новый пустой счёт, а не `null` — он попадёт в состояние только после первой операции с ненулевой суммой.
+As a result, the state is not cluttered with zero-balance accounts, and `accountList` returns only accounts that have a balance. The flip side: for an address with no tokens, `accountGet` will not find a record and will return a new empty account rather than `null` — it enters the state only after the first operation with a non-zero amount.
 
-#### Удаление монеты
+#### Removing a Coin
 
-`CoinManager.remove` удаляет монету вместе со всеми её счетами:
+`CoinManager.remove` removes a coin together with all of its accounts:
 
 ```typescript
 public async remove(item: UID): Promise<void> {
-    await this.accountsRemove(item);   // все счета монеты по префиксу
-    await super.remove(item);          // сама монета
+    await this.accountsRemove(item);   // all accounts of the coin by prefix
+    await super.remove(item);          // the coin itself
 }
 ```
 
-Счета удаляются одной транзакцией, без разбиения на части. Для монеты с большим числом держателей объём изменений растёт линейно и может упереться в ограничения Fabric на размер набора записей или время подтверждения — в таком случае удаление монеты не пройдёт целиком, а не частично.
+Accounts are removed in a single transaction, without splitting it into parts. For a coin with a large number of holders, the volume of changes grows linearly and may hit Fabric's limits on the size of the write set or the endorsement time — in that case, removing the coin will fail entirely rather than partially.
 
-## 📚 API Документация
+## API Documentation
 
 ### CoinManager
 
-#### Основные операции
+#### Core Operations
 
 ```typescript
-// Создание монеты
+// Create a coin
 create(coinId: string, decimals: number, owner: UID): T
 
-// Получение монеты
+// Get a coin
 get(item: UID, details?: Array<keyof ICoin>): Promise<T>
 
-// Сохранение монеты
+// Save a coin
 save(item: T): Promise<T>
 
-// Удаление монеты и всех связанных счетов
+// Remove a coin and all related accounts
 remove(item: UID): Promise<void>
 ```
 
-#### Операции с токенами
+#### Token Operations
 
 ```typescript
-// Эмиссия токенов
+// Emit tokens
 emit(coin: T | string, object: ICoinAccountObject, value: string): Promise<ICoinMovement>
 emitHeld(coin: T | string, object: ICoinAccountObject, value: string): Promise<ICoinMovement>
 
-// Сжигание токенов
+// Burn tokens
 burn(coin: T | string, object: ICoinAccountObject, value: string): Promise<ICoinMovement>
 burnHeld(coin: T | string, object: ICoinAccountObject, value: string): Promise<ICoinMovement>
 
-// Удержание токенов (hold)
+// Hold tokens
 hold(coin: T | string, object: ICoinAccountObject, value: string): Promise<ICoinMovement>
 unhold(coin: T | string, object: ICoinAccountObject, value: string): Promise<ICoinMovement>
 
-// Нулификация (обнуление баланса)
+// Nullification (zeroing the balance)
 nullify(coin: T | string, object: ICoinAccountObject): Promise<ICoinNullify>
 nullifyHeld(coin: T | string, object: ICoinAccountObject): Promise<ICoinNullify>
 
-// Переводы
+// Transfers
 transfer(coin: T | string, object: ICoinAccountObject, target: ICoinAccountObject, value: string): Promise<ICoinTransfer>
 transferToHeld(coin: T | string, object: ICoinAccountObject, target: ICoinAccountObject, value: string): Promise<ICoinTransfer>
 transferFromHeld(coin: T | string, object: ICoinAccountObject, target: ICoinAccountObject, value: string): Promise<ICoinTransfer>
 transferFromToHeld(coin: T | string, object: ICoinAccountObject, target: ICoinAccountObject, value: string): Promise<ICoinTransfer>
 ```
 
-**Параметры:**
-- `coin` - UID монеты или объект монеты
-- `object` - адрес счёта, с которым выполняется операция: `{ ownerUid, id }`
-- `target` - адрес счёта получателя (для transfer операций)
-- `value` - Сумма операции в строковом формате
+**Parameters:**
+- `coin` - the coin's UID or the coin object
+- `object` - the address of the account the operation is performed on: `{ ownerUid, id }`
+- `target` - the recipient account address (for transfer operations)
+- `value` - the operation amount in string format
 
-Адрес счёта — пара «владелец + идентификатор счёта». В переводах их два подряд, и объект различает стороны структурой: позиционные строки здесь легко переставить местами, а компилятор бы промолчал.
+An account address is a pair "owner + account identifier". In transfers there are two of them in a row, and the object distinguishes the sides by its structure: positional strings here would be easy to swap by mistake, and the compiler would stay silent.
 
-#### Работа со счетами
+#### Working with Accounts
 
 ```typescript
-// Получение счета
+// Get an account
 accountGet(coin: UID, object: ICoinAccountObject): Promise<ICoinAccount>
 
-// Сохранение счета
+// Save an account
 accountSet(item: ICoinAccount): Promise<ICoinAccount>
 
-// Список счетов монеты, либо только счета одного владельца
+// List a coin's accounts, or only the accounts of a single owner
 accountList(coin: UID, owner?: UID): Promise<Array<ICoinAccount>>
 ```
 
 ### CoinService
 
-#### Основные методы
+#### Core Methods
 
 ```typescript
-// Эмиссия с валидацией и событиями
+// Emission with validation and events
 emit(holder: H, params: ICoinEmitDto, isDispatchEvent: boolean): Promise<void>
 emitHeld(holder: H, params: ICoinEmitDto, isDispatchEvent: boolean): Promise<void>
 
-// Сжигание с валидацией и событиями
+// Burning with validation and events
 burn(holder: H, params: ICoinBurnDto, isDispatchEvent: boolean): Promise<void>
 burnHeld(holder: H, params: ICoinBurnDto, isDispatchEvent: boolean): Promise<void>
 
-// Нулификация с валидацией и событиями
+// Nullification with validation and events
 nullify(holder: H, params: ICoinNullifyDto, isDispatchEvent: boolean): Promise<void>
 nullifyHeld(holder: H, params: ICoinNullifyDto, isDispatchEvent: boolean): Promise<void>
 
-// Удержание с валидацией и событиями
+// Hold with validation and events
 hold(holder: H, params: ICoinHoldDto, isDispatchEvent: boolean): Promise<void>
 unhold(holder: H, params: ICoinUnholdDto, isDispatchEvent: boolean): Promise<void>
 
-// Переводы с валидацией и событиями
+// Transfers with validation and events
 transfer(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void>
 transferToHeld(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void>
 transferFromHeld(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void>
 transferFromToHeld(holder: H, params: ICoinTransferDto, isDispatchEvent: boolean): Promise<void>
 
-// Получение информации
+// Retrieving information
 get<T extends ICoin>(holder: H, params: ICoinGetDto): Promise<T>
 balanceGet(holder: H, params: ICoinBalanceGetDto): Promise<ICoinBalanceGetDtoResponse>
 ```
 
-**Параметры:**
-- `holder` - Объект с доступом к stub (IStubHolder)
-- `params` - DTO с параметрами операции
-- `isDispatchEvent` - Генерировать ли события
+**Parameters:**
+- `holder` - an object with access to the stub (IStubHolder)
+- `params` - a DTO with the operation parameters
+- `isDispatchEvent` - whether to emit events
 
-## 💡 Примеры использования
+## Usage Examples
 
-### Создание и настройка токена
+### Creating and Configuring a Token
 
 ```typescript
 import { CoinService, CoinManager } from '@hlf-core/coin-chaincode';
@@ -300,24 +305,24 @@ import { CoinService, CoinManager } from '@hlf-core/coin-chaincode';
 const service = new CoinService(logger);
 const manager = new CoinManager(logger, stub);
 
-// Создание токена с 18 знаками после запятой
+// Create a token with 18 decimal places
 const token = manager.create('USDT', 18, 'issuer-uid');
 await manager.save(token);
 
-console.log(`Создан токен: ${token.id}, владелец: ${token.owner}`);
+console.log(`Created token: ${token.id}, owner: ${token.owner}`);
 ```
 
-### Эмиссия и распределение токенов
+### Token Emission and Distribution
 
 ```typescript
-// Эмиссия 1,000,000 токенов на счет эмитента
+// Emit 1,000,000 tokens to the issuer's account
 await service.emit(holder, {
     coinUid: token.uid,
     object: { ownerUid: 'issuer-uid', id: 'OWNER' },
     value: '1000000'
 }, true);
 
-// Распределение токенов пользователям
+// Distribute tokens to users
 const users = ['user1', 'user2', 'user3'];
 for (const user of users) {
     await service.transfer(holder, {
@@ -330,10 +335,10 @@ for (const user of users) {
 }
 ```
 
-### Система удержания (escrow)
+### Hold System (escrow)
 
 ```typescript
-// Удержание 100 токенов на счете пользователя
+// Hold 100 tokens on a user's account
 await service.hold(holder, {
     coinUid: token.uid,
     object: { ownerUid: 'user1', id: 'OWNER' },
@@ -341,15 +346,15 @@ await service.hold(holder, {
     initiatorUid: 'escrow-service'
 }, true);
 
-// Проверка баланса (включая удержанные средства)
+// Check the balance (including held funds)
 const balance = await service.balanceGet(holder, {
     coinUid: token.uid,
     object: { ownerUid: 'user1', id: 'OWNER' }
 });
 
-console.log(`Доступно: ${balance.inUse}, удержано: ${balance.held}, всего: ${balance.total}`);
+console.log(`Available: ${balance.inUse}, held: ${balance.held}, total: ${balance.total}`);
 
-// Разблокировка удержанных средств
+// Release the held funds
 await service.unhold(holder, {
     coinUid: token.uid,
     object: { ownerUid: 'user1', id: 'OWNER' },
@@ -358,10 +363,10 @@ await service.unhold(holder, {
 }, true);
 ```
 
-### Сложные переводы
+### Complex Transfers
 
 ```typescript
-// Перевод из удержанных средств в обычные
+// Transfer from held funds to regular funds
 await service.transferFromHeld(holder, {
     coinUid: token.uid,
     object: { ownerUid: 'user1', id: 'OWNER' },
@@ -370,7 +375,7 @@ await service.transferFromHeld(holder, {
     initiatorUid: 'payment-service'
 }, true);
 
-// Перевод в удержание
+// Transfer into a hold
 await service.transferToHeld(holder, {
     coinUid: token.uid,
     object: { ownerUid: 'user2', id: 'OWNER' },
@@ -379,7 +384,7 @@ await service.transferToHeld(holder, {
     initiatorUid: 'escrow-service'
 }, true);
 
-// Перевод из удержания отправителя в удержание получателя
+// Transfer from the sender's hold to the recipient's hold
 await service.transferFromToHeld(holder, {
     coinUid: token.uid,
     object: { ownerUid: 'user3', id: 'OWNER' },
@@ -389,23 +394,23 @@ await service.transferFromToHeld(holder, {
 }, true);
 ```
 
-### Нулификация балансов
+### Nullifying Balances
 
 ```typescript
-// Обнулить обычный баланс пользователя
+// Zero out a user's regular balance
 await service.nullify(holder, {
     coinUid: token.uid,
     object: { ownerUid: 'user1', id: 'OWNER' }
 }, true);
 
-// Обнулить удержанный баланс
+// Zero out the held balance
 await service.nullifyHeld(holder, {
     coinUid: token.uid,
     object: { ownerUid: 'user1', id: 'OWNER' }
 }, true);
 ```
 
-### Обработка ошибок
+### Error Handling
 
 ```typescript
 import { CoinNotFoundError, CoinFromToEqualsError } from '@hlf-core/coin-chaincode';
@@ -420,79 +425,79 @@ try {
     }, true);
 } catch (error) {
     if (CoinNotFoundError.instanceOf(error)) {
-        console.error('Монета не найдена:', error.details);
+        console.error('Coin not found:', error.details);
     } else if (CoinFromToEqualsError.instanceOf(error)) {
-        console.error('Отправитель и получатель одинаковые:', error.details);
+        console.error('Sender and recipient are the same:', error.details);
     } else {
-        console.error('Неизвестная ошибка:', error);
+        console.error('Unknown error:', error);
     }
 }
 ```
 
-## 📦 DTO Интерфейсы
+## DTO Interfaces
 
 ### ICoinTransferDto
 ```typescript
 interface ICoinTransferDto {
-    coinUid: string;        // UID монеты
-    object: ICoinAccountObject;  // адрес счёта отправителя
-    target: ICoinAccountObject;  // адрес счёта получателя
-    value: string;          // Сумма перевода
-    initiatorUid?: string;  // UID инициатора операции
+    coinUid: string;        // the coin's UID
+    object: ICoinAccountObject;  // the sender's account address
+    target: ICoinAccountObject;  // the recipient's account address
+    value: string;          // the transfer amount
+    initiatorUid?: string;  // the UID of the operation initiator
 }
 ```
 
 ### ICoinEmitDto / ICoinBurnDto
 ```typescript
 interface ICoinEmitDto {
-    coinUid: string;        // UID монеты
-    object: ICoinAccountObject;  // адрес счёта: получателя для emit, отправителя для burn
-    value: string;          // Сумма эмиссии/сжигания
-    initiatorUid?: string;  // UID инициатора операции
+    coinUid: string;        // the coin's UID
+    object: ICoinAccountObject;  // the account address: the recipient for emit, the sender for burn
+    value: string;          // the emission/burning amount
+    initiatorUid?: string;  // the UID of the operation initiator
 }
 ```
 
 ### ICoinHoldDto / ICoinUnholdDto
 ```typescript
 interface ICoinHoldDto {
-    coinUid: string;        // UID монеты
-    object: ICoinAccountObject;  // адрес счёта, где удерживаются средства
-    value: string;          // Сумма удержания/разблокировки
-    initiatorUid?: string;  // UID инициатора операции
+    coinUid: string;        // the coin's UID
+    object: ICoinAccountObject;  // the account address where funds are held
+    value: string;          // the hold/release amount
+    initiatorUid?: string;  // the UID of the operation initiator
 }
 ```
 
 ### ICoinNullifyDto
 ```typescript
 interface ICoinNullifyDto {
-    coinUid: string;        // UID монеты
-    object: ICoinAccountObject;  // адрес счёта
+    coinUid: string;        // the coin's UID
+    object: ICoinAccountObject;  // the account address
 }
 ```
 
 ### ICoinBalanceGetDto
 ```typescript
 interface ICoinBalanceGetDto {
-    coinUid: string;        // UID монеты
-    object: ICoinAccountObject;  // адрес счёта
+    coinUid: string;        // the coin's UID
+    object: ICoinAccountObject;  // the account address
 }
 ```
 
 ### ICoinBalanceGetDtoResponse
 ```typescript
 interface ICoinBalanceGetDtoResponse {
-    inUse: string;          // Доступный баланс
-    held: string;           // Удержанный баланс
-    total: string;          // Общий баланс (inUse + held)
+    inUse: string;          // the available balance
+    held: string;           // the held balance
+    total: string;          // the total balance (inUse + held)
 }
 ```
 
-## 📡 События
+## Events
 
-Библиотека генерирует события для интеграции с внешними системами:
+The library emits events for integration with external systems:
 
 ### CoinEmittedEvent
-Генерируется при эмиссии токенов (emit/emitHeld).
+Emitted when tokens are emitted (emit/emitHeld).
 ```typescript
 {
     coinUid: string;
@@ -502,7 +507,7 @@ interface ICoinBalanceGetDtoResponse {
 ```
 
 ### CoinBurnedEvent
-Генерируется при сжигании токенов (burn/burnHeld).
+Emitted when tokens are burned (burn/burnHeld).
 ```typescript
 {
     coinUid: string;
@@ -512,7 +517,7 @@ interface ICoinBalanceGetDtoResponse {
 ```
 
 ### CoinTransferredEvent
-Генерируется при переводе токенов.
+Emitted when tokens are transferred.
 ```typescript
 {
     coinUid: string;
@@ -524,7 +529,7 @@ interface ICoinBalanceGetDtoResponse {
 ```
 
 ### CoinHoldedEvent
-Генерируется при удержании средств.
+Emitted when funds are held.
 ```typescript
 {
     coinUid: string;
@@ -535,7 +540,7 @@ interface ICoinBalanceGetDtoResponse {
 ```
 
 ### CoinUnholdedEvent
-Генерируется при разблокировке удержанных средств.
+Emitted when held funds are released.
 ```typescript
 {
     coinUid: string;
@@ -546,7 +551,7 @@ interface ICoinBalanceGetDtoResponse {
 ```
 
 ### CoinNullifiedEvent
-Генерируется при нулификации баланса.
+Emitted when a balance is nullified.
 ```typescript
 {
     coinUid: string;
@@ -554,87 +559,87 @@ interface ICoinBalanceGetDtoResponse {
 }
 ```
 
-## 📁 Структура проекта
+## Project Structure
 
 ```
 src/
-├── CoinManager.ts          # Основной менеджер монет
-├── CoinAccountManager.ts   # Менеджер счетов
-├── CoinService.ts          # Сервисный слой
-├── ICoinManager.ts         # Интерфейс менеджера
-├── Error.ts                # Кастомные ошибки
-└── public-api.ts           # Публичный API
+├── CoinManager.ts          # Main coin manager
+├── CoinAccountManager.ts   # Account manager
+├── CoinService.ts          # Service layer
+├── ICoinManager.ts         # Manager interface
+├── Error.ts                # Custom errors
+└── public-api.ts           # Public API
 ```
 
-### Основные файлы
+### Main Files
 
-- **CoinManager.ts** - Реализация всех операций с монетами
-- **CoinAccountManager.ts** - Управление счетами пользователей
-- **CoinService.ts** - Бизнес-логика с валидацией и событиями
-- **ICoinManager.ts** - Контракт для менеджера монет
-- **Error.ts** - Система обработки ошибок
+- **CoinManager.ts** - Implementation of all coin operations
+- **CoinAccountManager.ts** - Management of user accounts
+- **CoinService.ts** - Business logic with validation and events
+- **ICoinManager.ts** - Contract for the coin manager
+- **Error.ts** - Error-handling system
 
-## 🔧 Разработка
+## Development
 
-### Установка зависимостей
+### Installing Dependencies
 
 ```bash
 npm install
 ```
 
-### Сборка
+### Build
 
 ```bash
 npm run build
 ```
 
-### Тестирование
+### Testing
 
 ```bash
 npm test
 ```
 
-### Линтинг
+### Linting
 
 ```bash
 npm run lint
 ```
 
-## ⚠️ Важные замечания
+## Important Notes
 
-### Безопасность
-- Библиотека не проверяет права доступа - это ответственность вызывающего кода
-- Все операции должны проходить через endorsement policy сети Hyperledger Fabric
-- Валидация amount/value выполняется на уровне CoinAccount
+### Security
+- The library does not check access rights - this is the responsibility of the calling code
+- All operations must pass through the endorsement policy of the Hyperledger Fabric network
+- Validation of amount/value is performed at the CoinAccount level
 
-### Атомарность
-- Операции transfer выполняют множественные read/write операции
-- Консистентность гарантируется через read-write sets механизм Hyperledger Fabric
-- Параллельные транзакции могут привести к MVCC_READ_CONFLICT
+### Atomicity
+- Transfer operations perform multiple read/write operations
+- Consistency is guaranteed through Hyperledger Fabric's read-write sets mechanism
+- Concurrent transactions may lead to MVCC_READ_CONFLICT
 
-### Производительность
-- Методы transfer делают 6+ операций с state
-- Рекомендуется батчинг операций где возможно
-- Пустые счета автоматически удаляются для экономии места
-- `accountList` и удаление монеты обходят все счета монеты в одной транзакции — стоимость линейна по числу держателей и на крупных выпусках упирается в лимиты Fabric
+### Performance
+- Transfer methods perform 6+ state operations
+- Batching operations is recommended where possible
+- Empty accounts are automatically removed to save space
+- `accountList` and coin removal traverse all of a coin's accounts within a single transaction — the cost is linear in the number of holders and, for large issues, hits Fabric's limits
 
-## Лицензия
+## License
 
 ISC
 
-## Автор
+## Author
 
-**Ренат Губаев**
+**Renat Gubaev**
 - Email: renat.gubaev@gmail.com
 - GitHub: [@ManhattanDoctor](https://github.com/ManhattanDoctor)
 
-## Ссылки
+## Links
 
 - [GitHub Repository](https://github.com/ManhattanDoctor/hlf-core-coin-chaincode)
 - [NPM Package](https://www.npmjs.com/package/@hlf-core/coin-chaincode)
 - [Issue Tracker](https://github.com/ManhattanDoctor/hlf-core-coin-chaincode/issues)
 - [Hyperledger Fabric Documentation](https://hyperledger-fabric.readthedocs.io/)
 
-## Поддержка
+## Support
 
-Если вы нашли баг или у вас есть предложение по улучшению, пожалуйста, создайте issue в [GitHub Issues](https://github.com/ManhattanDoctor/hlf-core-coin-chaincode/issues).
+If you have found a bug or have a suggestion for improvement, please open an issue in [GitHub Issues](https://github.com/ManhattanDoctor/hlf-core-coin-chaincode/issues).
